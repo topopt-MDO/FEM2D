@@ -36,11 +36,24 @@ FEMSolver::~FEMSolver() {
 }
 
 void FEMSolver::compute_elems() {
-  // elems.resize(num_nodes_x, vector<int>(num_nodes_y, 0));
+  int node_i, node_j;
+
+  elems.resize(num_nodes_x, vector<vector<int> >(num_nodes_y, vector<int>(8, 0)));
 
   for (int i = 0; i < num_nodes_x - 1; i++){
     for (int j = 0; j < num_nodes_y - 1; j++){
-
+      // -1, -1
+      elems[i][j][0] = (i + 0) * num_nodes_y * 2 + (j + 0) * 2 + 0;
+      elems[i][j][1] = (i + 0) * num_nodes_y * 2 + (j + 0) * 2 + 1;
+      //  1, -1
+      elems[i][j][2] = (i + 1) * num_nodes_y * 2 + (j + 0) * 2 + 0;
+      elems[i][j][3] = (i + 1) * num_nodes_y * 2 + (j + 0) * 2 + 1;
+      //  1,  1
+      elems[i][j][4] = (i + 1) * num_nodes_y * 2 + (j + 1) * 2 + 0;
+      elems[i][j][5] = (i + 1) * num_nodes_y * 2 + (j + 1) * 2 + 1;
+      // -1,  1
+      elems[i][j][6] = (i + 0) * num_nodes_y * 2 + (j + 1) * 2 + 0;
+      elems[i][j][7] = (i + 0) * num_nodes_y * 2 + (j + 1) * 2 + 1;
     }
   }
 }
@@ -54,6 +67,8 @@ void FEMSolver::compute_nodes() {
       nodes[ii][jj][1] = jj*sp_y;
     }
   }
+
+  // print(nodes);
 }
 
 void FEMSolver::compute_Ke(double x1, double x2, double y1, double y2){
@@ -107,13 +122,32 @@ void FEMSolver::compute_Ke(double x1, double x2, double y1, double y2){
 }
 
 void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
-  int size = num_nodes_x * num_nodes_y;
+  int index = 0;
 
-  for (int i = 0; i < size; i++){
-    data[i] = 1;
-    rows[i] = 2;
-    cols[i] = 3;
+  for (int ielem_x = 0; ielem_x < num_nodes_x - 1; ielem_x++) {
+    for (int ielem_y = 0; ielem_y < num_nodes_y - 1; ielem_y++) {
+      for (int imat_x = 0; imat_x < 8; imat_x++) {
+        for (int imat_y = 0; imat_y < 8; imat_y++) {
+          data[index] = Ke_[imat_x][imat_y];
+          rows[index] = elems[ielem_x][ielem_y][imat_x];
+          cols[index] = elems[ielem_x][ielem_y][imat_y];
+          index += 1;
+          // cout << rows[index] << "," << cols[index] << endl;
+        }
+      }
+    }
   }
+
+  for (int imat_x = 0; imat_x < 8; imat_x++) {
+    for (int imat_y = 0; imat_y < 8; imat_y++) {
+      cout << Ke_[imat_x][imat_y] << ",";
+      // cout << rows[index] << "," << cols[index] << endl;
+    }
+    cout << "\n";
+  }
+
+
+  // Lagrange multipliers
 }
 
 int main(){
