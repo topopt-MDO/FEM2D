@@ -6,7 +6,7 @@ cimport numpy as np
 cdef extern from "fem_solver.h":
   cdef cppclass FEMSolver:
     FEMSolver(int, int, double, double, double, double) except +
-    void get_stiffness_matrix(double*, int*, int*)
+    void get_stiffness_matrix(double* data, int* rows, int* cols)
 
 cdef class PyFEMSolver:
 
