@@ -14,27 +14,38 @@ FEMSolver::FEMSolver(
   ds_dy = 2.0 / length_y * (num_nodes_y - 1);
 
   D_voigt.resize(3, vector<double>(3,0.0));
-  
+
   compute_nodes();
   compute_elems();
   compute_D(E, nu);
-  
+
   compute_Ke(1,2,3,4);
 }
 
 void FEMSolver::compute_D(double E, double nu){
   double sc = E/(1-nu*nu);
-  D_voigt = {{sc*1, sc*nu, 0},{sc*nu, sc, 0}, {0, 0, 0.5*(1-nu)*sc}};
-  print(D_voigt);
+
+  D_voigt[0][0] = sc * 1;
+  D_voigt[1][1] = sc * 1;
+  D_voigt[0][1] = sc * nu;
+  D_voigt[1][0] = sc * nu;
+  D_voigt[2][2] = sc * 0.5 * (1 - nu);
 }
 
 FEMSolver::~FEMSolver() {
 }
 
-void FEMSolver::compute_elems() {}
+void FEMSolver::compute_elems() {
+  // elems.resize(num_nodes_x, vector<int>(num_nodes_y, 0));
+
+  for (int i = 0; i < num_nodes_x - 1; i++){
+    for (int j = 0; j < num_nodes_y - 1; j++){
+
+    }
+  }
+}
 
 void FEMSolver::compute_nodes() {
-  
 }
 
 void FEMSolver::compute_Ke(double x1, double x2, double y1, double y2){

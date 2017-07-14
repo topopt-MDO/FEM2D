@@ -20,10 +20,9 @@ private:
   double length_x, length_y;
   double dr_dx, ds_dy;
   Matrix nodes;
-  vector<vector<int> > elems;
+  vector<vector<vector<double> > > elems;
   Matrix D_voigt;
-  Matrix Ke_;  
-  
+  Matrix Ke_;
   void compute_nodes();
   void compute_elems();
   void compute_D(double E, double nu);
