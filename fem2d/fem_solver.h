@@ -13,16 +13,16 @@ public:
   );
   ~FEMSolver();
   void get_stiffness_matrix(double* data, int* rows, int* cols);
+
 private:
   int num_nodes, num_elems;
   int num_nodes_x, num_nodes_y;
   double length_x, length_y;
   double dr_dx, ds_dy;
-  vector<vector<double> > nodes;
+  Matrix nodes;
   vector<vector<int> > elems;
-  vector<vector<double> > D_voigt;
-  vector<vector<double> > Ke_;
-  
+  Matrix D_voigt;
+  Matrix Ke_;  
   
   void compute_nodes();
   void compute_elems();
