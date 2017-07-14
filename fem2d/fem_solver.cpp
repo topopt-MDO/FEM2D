@@ -24,14 +24,19 @@ FEMSolver::FEMSolver(
 
 void FEMSolver::compute_D(double E, double nu){
   double sc = E/(1-nu*nu);
-  D_voigt = {{sc*1, sc*nu, 0},{sc*nu, sc, 0}, {0, 0, 0.5*(1-nu)*sc}};
+
+  D_voigt[0][0] = sc * 1;
+  D_voigt[1][1] = sc * 1;
+  D_voigt[0][1] = sc * nu;
+  D_voigt[1][0] = sc * nu;
+  D_voigt[2][2] = sc * 0.5 * (1 - nu);
 }
 
 FEMSolver::~FEMSolver() {
 }
 
 void FEMSolver::compute_elems() {
-  elems.resize(num_nodes_x, vector<int>(num_nodes_y, 0));
+  // elems.resize(num_nodes_x, vector<int>(num_nodes_y, 0));
 
   for (int i = 0; i < num_nodes_x - 1; i++){
     for (int j = 0; j < num_nodes_y - 1; j++){
