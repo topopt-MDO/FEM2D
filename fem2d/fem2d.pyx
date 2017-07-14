@@ -1,6 +1,6 @@
 from libcpp.vector cimport vector
 import numpy as np
-# cimport numpy as np
+cimport numpy as np
 
 
 cdef extern from "fem_solver.h":
