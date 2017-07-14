@@ -1,4 +1,5 @@
 #include "fem_solver.h"
+#include "LinAlg_MDO.cpp"
 
 FEMSolver::FEMSolver(
   int num_nodes_x, int num_nodes_y, double length_x, double length_y,
@@ -87,7 +88,9 @@ void FEMSolver::compute_Ke(double x1, double x2, double y1, double y2){
   B[2][6] += 0.;
   B[2][7] += -0.25 * dr_dx;
 
-  Ke_ = dot(dot_T(B, D_voigt, 0), D_voigt);
+  Matrix BT = transpose(B);
+  Matrix BD_tmp = dot(BT, D_voigt);
+  Ke_ = dot(BD_tmp, D_voigt);
 }
 
 void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {

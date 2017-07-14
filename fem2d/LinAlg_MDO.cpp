@@ -17,6 +17,8 @@ Matrix transpose(Matrix);
 double dot(Vector&, Vector&);
 Vector dot(Matrix&, Vector&);
 Matrix dot(Matrix&, Matrix&);
+void print(Matrix&);
+void print(Vector&);
 
 Matrix transpose(Matrix A){
     int n = A.size(), m = A[0].size();
@@ -74,6 +76,27 @@ Matrix dot(Matrix& input1, Matrix& input2){
     return output;
 }
 
+void print(Matrix& A){
+    int n = A.size(), m = A[0].size();
+    cout << "size: (" << n << ", "<< m << ")\n";
+    for (int ii = 0; ii < n; ii++){
+        for (int jj = 0; jj < m; jj++){
+            cout << A[ii][jj] << " ";
+        }
+        cout << "\n";
+    }
+}
+
+void print(Vector& V){
+    int n = V.size();
+    cout << "size: (" << n << ")\n[";
+    for (int ii = 0; ii < n; ii++){
+            cout << V[ii] << " ";
+    }
+    cout << "]\n";
+}
+
+#if __DEBUGFLAG__
 int main(){
     Matrix A;
     A = {{1,2,3},{4,5,6},{7,8,9}};
@@ -87,21 +110,21 @@ int main(){
     vector<vector<double> > a2 = {{1, 2, 3}, {2,3,4}, {4,5,6}};
     vector<double> b2 = {1, 2, 3};
     vector<double> c2 = dot(a2,b2);
-    for (int ii = 0; ii < 3; ii++) cout << c2[ii] << endl; // verified
+    // for (int ii = 0; ii < 3; ii++) cout << c2[ii] << endl; // verified
+    print(c2);
 
     vector<vector<double> > a3 = {{1, 2, 3}, {2,3,4}, {4,5,6}};
     vector<vector<double> > b3 = {{1, 2, 3}, {2,3,4}, {4,5,6}};
     vector<vector<double> > c3 = dot(a3,b3);
-    for (int ii = 0; ii < 3; ii++) {
-        cout << "\n";
-        for (int jj = 0; jj < 3; jj++) {
-            cout << c3[ii][jj] << " "; 
-        }
-        cout << "\n";
-    }
+    // for (int ii = 0; ii < 3; ii++) {
+    //     cout << "\n";
+    //     for (int jj = 0; jj < 3; jj++) {
+    //         cout << c3[ii][jj] << " "; 
+    //     }
+    //     cout << "\n";
+    // }
+    print(c3);
 }
-
-
-
+#endif
 
 #endif
