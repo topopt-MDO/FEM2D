@@ -1,5 +1,6 @@
 #include "fem_solver.h"
 #include "LinAlg_MDO.cpp"
+#include <assert.h>
 
 FEMSolver::FEMSolver(
   int num_nodes_x, int num_nodes_y, double length_x, double length_y,
@@ -132,22 +133,32 @@ void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
           rows[index] = elems[ielem_x][ielem_y][imat_x];
           cols[index] = elems[ielem_x][ielem_y][imat_y];
           index += 1;
-          // cout << rows[index] << "," << cols[index] << endl;
         }
       }
     }
   }
 
-  for (int imat_x = 0; imat_x < 8; imat_x++) {
-    for (int imat_y = 0; imat_y < 8; imat_y++) {
-      cout << Ke_[imat_x][imat_y] << ",";
-      // cout << rows[index] << "," << cols[index] << endl;
-    }
-    cout << "\n";
-  }
-
-
   // Lagrange multipliers
+  int inode_x = 0;
+  int idof = 0;
+  int num_dofs = num_nodes_x * num_nodes_y * 2;
+
+  for (int k = 0; k < 2; k++) {
+    for (int inode_y = 0; inode_y < num_nodes_y; inode_y++) {
+      idof = inode_x * num_nodes_y * 2 + inode_y * 2 + k;
+
+      data[index] = 1.0;
+      rows[index] = idof;
+      cols[index] = idof + num_dofs;
+      index += 1;
+
+      data[index] = 1.0;
+      rows[index] = idof + num_dofs;
+      cols[index] = idof;
+      index += 1;
+    }
+  }
+  cout << index << "\n\n\n";
 }
 
 int main(){
