@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 import matplotlib.pylab as plt
 import scipy.sparse
+import scipy.sparse.linalg as SL
 
 from fem2d import PyFEMSolver
 
@@ -64,8 +65,34 @@ if 1:
     plt.spy(mtx)
     plt.show()
 
-
-
 # print(data)
 # print(rows)
 # print(cols)
+
+# def compute_nodes(num_nodes_x, num_nodes_y, length_x, length_y):
+#     nodes = np.zeros([num_nodes_x, num_nodes_y, 2])
+#     sp_x = length_x/(num_nodes_x-1)
+#     sp_y = length_y/(num_nodes_y-1)
+#     idx = np.linspace(0,length_x,num_nodes_x)
+#     idy = np.linspace(0,length_y,num_nodes_y)
+#     [x,y] = np.meshgrid(idx,idy)
+
+#     print(x)
+#     print(y)
+
+#     pass
+
+# compute_nodes(2,3,1,4)
+
+
+
+def compute_force():
+    vecF = np.zeros(2*num_nodes_x*num_nodes_y + 2*num_nodes_y,);
+    vecF[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2+1] = - 0.01;
+    return vecF
+
+f = compute_force()
+
+u = SL.spsolve(mtx,f)
+
+print(u)

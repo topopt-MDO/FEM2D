@@ -20,7 +20,7 @@ FEMSolver::FEMSolver(
   compute_elems();
   compute_D(E, nu);
 
-  compute_Ke(1,2,3,4);
+  compute_Ke();
 }
 
 void FEMSolver::compute_D(double E, double nu){
@@ -72,7 +72,7 @@ void FEMSolver::compute_nodes() {
   // print(nodes);
 }
 
-void FEMSolver::compute_Ke(double x1, double x2, double y1, double y2){
+void FEMSolver::compute_Ke(){
   Matrix B;
   // N.resize(2, vector<double>(8,0.0));
   B.resize(3, vector<double>(8,0.0));
