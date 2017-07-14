@@ -140,7 +140,7 @@ void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
 
   for (int imat_x = 0; imat_x < 8; imat_x++) {
     for (int imat_y = 0; imat_y < 8; imat_y++) {
-      cout << Ke_[imat_x][imat_y] << ",";
+      // cout << Ke_[imat_x][imat_y] << ",";
       // cout << rows[index] << "," << cols[index] << endl;
     }
     cout << "\n";
