@@ -1,3 +1,4 @@
 *.so
 build/*
 *~
+./fem2d/fem2d.cpp
