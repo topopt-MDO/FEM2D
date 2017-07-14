@@ -19,7 +19,7 @@ private:
   int num_nodes_x, num_nodes_y;
   double length_x, length_y;
   double dr_dx, ds_dy;
-  Matrix nodes;
+  vector<vector<vector<double> > > nodes;
   vector<vector<vector<int> > > elems;
   Matrix D_voigt;
   Matrix Ke_;
