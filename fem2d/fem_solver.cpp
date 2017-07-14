@@ -54,8 +54,6 @@ void FEMSolver::compute_nodes() {
       nodes[ii][jj][1] = jj*sp_y;
     }
   }
-
-  print(nodes);
 }
 
 void FEMSolver::compute_Ke(double x1, double x2, double y1, double y2){
