@@ -4,10 +4,15 @@
 {
     "distutils": {
         "depends": [
+            "/usr/lib/python2.7/dist-packages/numpy/core/include/numpy/arrayobject.h", 
+            "/usr/lib/python2.7/dist-packages/numpy/core/include/numpy/ufuncobject.h", 
             "fem2d/fem_solver.h"
         ], 
         "extra_compile_args": [
             "-std=c++11"
+        ], 
+        "include_dirs": [
+            "/usr/lib/python2.7/dist-packages/numpy/core/include"
         ], 
         "language": "c++"
     }, 
