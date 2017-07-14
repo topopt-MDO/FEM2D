@@ -1,5 +1,4 @@
 #include "fem_solver.h"
-#include "dots.cpp"
 
 FEMSolver::FEMSolver(
   int num_nodes_x, int num_nodes_y, double length_x, double length_y,
@@ -14,11 +13,11 @@ FEMSolver::FEMSolver(
   ds_dy = 2.0 / length_y * (num_nodes_y - 1);
 
   D_voigt.resize(3, vector<double>(3,0.0));
-  
+
   compute_nodes();
   compute_elems();
   compute_D(E, nu);
-  
+
   compute_Ke(1,2,3,4);
 }
 
