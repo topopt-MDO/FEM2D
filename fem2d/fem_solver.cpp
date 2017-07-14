@@ -119,6 +119,7 @@ void FEMSolver::compute_Ke(double x1, double x2, double y1, double y2){
   Matrix BT = transpose(B);
   Matrix BD_tmp = dot(BT, D_voigt);
   Ke_ = dot(BD_tmp, D_voigt);
+
 }
 
 void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
