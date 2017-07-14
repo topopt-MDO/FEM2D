@@ -20,6 +20,9 @@ Matrix dot(Matrix&, Matrix&);
 void print(Matrix&);
 void print(Vector&);
 
+template <typename _Scalar>
+void print(vector<vector<vector<_Scalar> > >&);
+
 Matrix transpose(Matrix A){
     int n = A.size(), m = A[0].size();
 
@@ -95,6 +98,19 @@ void print(Vector& V){
     }
     cout << "]\n";
 }
+
+template <typename _Scalar>
+void print(vector<vector<vector<_Scalar> > >& T){
+    int n = T.size(), m = T[0].size(), l = T[0][0].size();
+    for (int ii = 0; ii < n; ii ++){
+        for (int jj = 0; jj < m; jj ++){
+            for (int kk = 0; kk < l; kk ++){
+                cout << "(" << ii << ","<< jj << "," << kk << "): " << T[ii][jj][kk] << endl;
+            }
+        }
+    } 
+}
+
 
 #if __DEBUGFLAG__
 int main(){

@@ -46,6 +46,16 @@ void FEMSolver::compute_elems() {
 }
 
 void FEMSolver::compute_nodes() {
+  nodes.resize(num_nodes_x, vector<vector<double> >(num_nodes_y, vector<double>(2,0))); // (x,y) for indx. (i,j)
+  double sp_x = length_x/(num_nodes_x-1), sp_y = length_y/(num_nodes_y-1); // spacing btw. nodes
+  for (int ii = 0; ii < num_nodes_x; ii++){
+    for (int jj = 0; jj < num_nodes_y; jj++){
+      nodes[ii][jj][0] = ii*sp_x;
+      nodes[ii][jj][1] = jj*sp_y;
+    }
+  }
+
+  print(nodes);
 }
 
 void FEMSolver::compute_Ke(double x1, double x2, double y1, double y2){
