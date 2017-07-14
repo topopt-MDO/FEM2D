@@ -4,6 +4,7 @@
 using namespace std;
 typedef vector<vector<double> > Matrix;
 typedef vector<double> Vector;
+
 class FEMSolver {
 public:
   FEMSolver(
