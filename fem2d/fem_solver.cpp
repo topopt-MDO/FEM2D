@@ -25,6 +25,7 @@ FEMSolver::FEMSolver(
 void FEMSolver::compute_D(double E, double nu){
   double sc = E/(1-nu*nu);
   D_voigt = {{sc*1, sc*nu, 0},{sc*nu, sc, 0}, {0, 0, 0.5*(1-nu)*sc}};
+  print(D_voigt);
 }
 
 FEMSolver::~FEMSolver() {
@@ -32,7 +33,9 @@ FEMSolver::~FEMSolver() {
 
 void FEMSolver::compute_elems() {}
 
-void FEMSolver::compute_nodes() {}
+void FEMSolver::compute_nodes() {
+  
+}
 
 void FEMSolver::compute_Ke(double x1, double x2, double y1, double y2){
   Matrix B;
