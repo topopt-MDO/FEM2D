@@ -1,5 +1,5 @@
 import numpy as np
-import numpy.linalg as LA
+import scipy.sparse.linalg as SL
 
 from fem2d import PyFEMSolver
 
@@ -24,7 +24,7 @@ import matplotlib.pylab as plt
 size = num_nodes_x * num_nodes_y * 2 + 2 * num_nodes_y
 mtx = scipy.sparse.csc_matrix((data, (rows, cols)), shape=(size, size))
 plt.spy(mtx)
-plt.show()
+# plt.show()
 
 # print(data)
 # print(rows)
@@ -48,9 +48,12 @@ plt.show()
 
 
 def compute_force():
-    vecF = np.zeros(2*num_nodes_x*num_nodes_y,);
-    vecF[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2+1] = - 5;
+    vecF = np.zeros(2*num_nodes_x*num_nodes_y + 2*num_nodes_y,);
+    vecF[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2+1] = - 0.01;
     return vecF
 
 f = compute_force()
 
+u = SL.spsolve(mtx,f)
+
+print(u)
