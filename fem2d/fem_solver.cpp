@@ -36,11 +36,16 @@ FEMSolver::~FEMSolver() {
 }
 
 void FEMSolver::compute_elems() {
-  // elems.resize(num_nodes_x, vector<int>(num_nodes_y, 0));
+  int node_i, node_j;
+
+  elems.resize(num_nodes_x, vector<vector<int> >(num_nodes_y, vector<int>(4, 0)));
 
   for (int i = 0; i < num_nodes_x - 1; i++){
     for (int j = 0; j < num_nodes_y - 1; j++){
-
+      elems[i][j][0] = (i + 0) * num_nodes_y + (j + 0);
+      elems[i][j][1] = (i + 1) * num_nodes_y + (j + 0);
+      elems[i][j][2] = (i + 1) * num_nodes_y + (j + 1);
+      elems[i][j][3] = (i + 0) * num_nodes_y + (j + 1);
     }
   }
 }

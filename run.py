@@ -2,8 +2,8 @@ import numpy as np
 
 from fem2d import PyFEMSolver
 
-num_nodes_x = 10
-num_nodes_y = 10
+num_nodes_x = 2
+num_nodes_y = 3
 
 a = PyFEMSolver(num_nodes_x, num_nodes_y,1,1,1,1)
 
