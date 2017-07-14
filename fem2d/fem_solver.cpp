@@ -29,9 +29,18 @@ void FEMSolver::compute_D(double E, double nu){
 FEMSolver::~FEMSolver() {
 }
 
-void FEMSolver::compute_elems() {}
+void FEMSolver::compute_elems() {
+  elems.resize(num_nodes_x, vector<int>(num_nodes_y, 0));
 
-void FEMSolver::compute_nodes() {}
+  for (int i = 0; i < num_nodes_x - 1; i++){
+    for (int j = 0; j < num_nodes_y - 1; j++){
+
+    }
+  }
+}
+
+void FEMSolver::compute_nodes() {
+}
 
 void FEMSolver::compute_Ke(double x1, double x2, double y1, double y2){
   Matrix B;

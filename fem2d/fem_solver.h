@@ -19,11 +19,11 @@ private:
   double length_x, length_y;
   double dr_dx, ds_dy;
   vector<vector<double> > nodes;
-  vector<vector<int> > elems;
+  vector<vector<vector<double> > > elems;
   vector<vector<double> > D_voigt;
   vector<vector<double> > Ke_;
-  
-  
+
+
   void compute_nodes();
   void compute_elems();
   void compute_D(double E, double nu);
