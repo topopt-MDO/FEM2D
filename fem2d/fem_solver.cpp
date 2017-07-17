@@ -26,6 +26,12 @@ FEMSolver::FEMSolver(
 void FEMSolver::compute_D(double E, double nu){
   double sc = E/(1-nu*nu);
 
+  // E / (1 - nu^2) *
+  // [ 1, nu, 0       ]
+  // [nu,  1, 0       ]
+  // [ 0,  0, (1-nu)/2]
+
+  D_voigt.resize(3, vector<double>(3,0.0));
   D_voigt[0][0] = sc * 1;
   D_voigt[1][1] = sc * 1;
   D_voigt[0][1] = sc * nu;
@@ -39,7 +45,7 @@ FEMSolver::~FEMSolver() {
 void FEMSolver::compute_elems() {
   int node_i, node_j;
 
-  elems.resize(num_nodes_x, vector<vector<int> >(num_nodes_y, vector<int>(8, 0)));
+  elems.resize(num_nodes_x - 1, vector<vector<int> >(num_nodes_y - 1, vector<int>(8, 0)));
 
   for (int i = 0; i < num_nodes_x - 1; i++){
     for (int j = 0; j < num_nodes_y - 1; j++){
@@ -74,8 +80,21 @@ void FEMSolver::compute_nodes() {
 
 void FEMSolver::compute_Ke(){
   Matrix B;
-  // N.resize(2, vector<double>(8,0.0));
   B.resize(3, vector<double>(8,0.0));
+
+  // u = N1 * u1 + N2 * u2 + N3 * u3 + N4 * u4
+  // v = N1 * v1 + N2 * v2 + N3 * v3 + N4 * v4
+
+  // N1 = 0.25 * (1 - r) * (1 - s);
+  // N2 = 0.25 * (1 + r) * (1 - s);
+  // N3 = 0.25 * (1 + r) * (1 + s);
+  // N4 = 0.25 * (1 - r) * (1 + s);
+
+  // N
+  // [N1  0]
+  // [ 0 N1]
+  // [N2  0]
+  // ...
 
   // du_dx
   B[0][0] += -0.25 * dr_dx;
@@ -117,6 +136,8 @@ void FEMSolver::compute_Ke(){
   B[2][6] += 0.;
   B[2][7] += -0.25 * dr_dx;
 
+  Ke_.resize(8, vector<double>(8,0.0));
+
   Matrix BT = transpose(B);
   Matrix BD_tmp = dot(BT, D_voigt);
   Ke_ = dot(BD_tmp, B);
@@ -149,16 +170,15 @@ void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
 
       data[index] = 1.0;
       rows[index] = idof;
-      cols[index] = idof + num_dofs;
+      cols[index] = inode_y * 2 + k + num_dofs;
       index += 1;
 
       data[index] = 1.0;
-      rows[index] = idof + num_dofs;
+      rows[index] = inode_y * 2 + k + num_dofs;
       cols[index] = idof;
       index += 1;
     }
   }
-  cout << index << "\n\n\n";
 }
 
 int main(){

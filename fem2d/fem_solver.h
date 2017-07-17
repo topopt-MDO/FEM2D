@@ -26,7 +26,6 @@ private:
   void compute_nodes();
   void compute_elems();
   void compute_D(double E, double nu);
-  // void compute_KG();
   void compute_Ke();
   // void compute_Ke(int elem_id);
 };
