@@ -6,10 +6,10 @@ import scipy.sparse.linalg as SL
 
 from fem2d import PyFEMSolver
 
-length_x = 1
-length_y = 1
-num_nodes_x = 3
-num_nodes_y = 3
+length_x = 6
+length_y = 6
+num_nodes_x = 6
+num_nodes_y = 6
 E = 1
 nu = 0.5
 
@@ -56,14 +56,14 @@ def plot(axes):
 size = num_nodes_x * num_nodes_y * 2 + 2 * num_nodes_y
 mtx = scipy.sparse.csc_matrix((data, (rows, cols)), shape=(size, size))
 
-if 0:
-    axes = plt.gca()
-    plot(axes)
-    plt.show()
+# if 0:
+axes = plt.gca()
+plot(axes)
+plt.show()
 
-if 1:
-    plt.spy(mtx)
-    plt.show()
+# if 1:
+# plt.spy(mtx)
+# plt.show()
 
 # print(data)
 # print(rows)
