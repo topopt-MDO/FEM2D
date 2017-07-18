@@ -82,10 +82,30 @@ void FEMSolver::compute_Ke(){
   Matrix B;
   double Area = (length_x*length_y)/((num_nodes_x-1)*(num_nodes_y-1));
   cout << Area;
-  
-  vector<double> ri = {-1./sqrt(3), +1./sqrt(3), +1./sqrt(3), -1./sqrt(3)};
-  vector<double> si = {-1./sqrt(3), -1./sqrt(3), +1./sqrt(3), +1./sqrt(3)};
-  vector<double> wi = {1, 1, 1, 1};
+
+  // vector<double> ri = {-1./sqrt(3), +1./sqrt(3), +1./sqrt(3), -1./sqrt(3)};
+  // vector<double> si = {-1./sqrt(3), -1./sqrt(3), +1./sqrt(3), +1./sqrt(3)};
+  // vector<double> wi = {1, 1, 1, 1};
+
+  vector<double> ri, si, wi;
+  ri.resize(4);
+  si.resize(4);
+  wi.resize(4);
+
+  ri[0] = -1./sqrt(3);
+  ri[1] =  1./sqrt(3);
+  ri[2] =  1./sqrt(3);
+  ri[3] = -1./sqrt(3);
+
+  si[0] = -1./sqrt(3);
+  si[1] = -1./sqrt(3);
+  si[2] =  1./sqrt(3);
+  si[3] =  1./sqrt(3);
+
+  wi[0] = 1;
+  wi[1] = 1;
+  wi[2] = 1;
+  wi[3] = 1;
 
   // u = N1 * u1 + N2 * u2 + N3 * u3 + N4 * u4
   // v = N1 * v1 + N2 * v2 + N3 * v3 + N4 * v4
@@ -139,7 +159,7 @@ void FEMSolver::compute_Ke(){
     //B[2][6] = 0.;
     B[2][7] = -0.25 * (1+s) * dr_dx;
 
-    
+
     Matrix BT = transpose(B);
     Matrix BD_tmp = dot(BT, D_voigt);
     Matrix BDB = dot(BD_tmp, B);
@@ -155,7 +175,7 @@ void FEMSolver::compute_Ke(){
   // ...
 
   // du_dx (WIP)
-  
+
 
   // du_dx .. (Jun 14)
   // B[0][0] += -0.25 * dr_dx;
