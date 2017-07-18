@@ -11,8 +11,8 @@ length_x = 1
 length_y = 1
 num_nodes_x = 10
 num_nodes_y = 10
-E = 1
-nu = 0
+E = 1000.
+nu = 0.3 #0.3
 
 a = PyFEMSolver(num_nodes_x, num_nodes_y, length_x, length_y, E, nu)
 
@@ -52,19 +52,9 @@ def plot(nodes, axes, color='k'):
 size = num_nodes_x * num_nodes_y * 2 + 2 * num_nodes_y
 mtx = scipy.sparse.csc_matrix((data, (rows, cols)), shape=(size, size))
 
-<<<<<<< HEAD
-# if 0:
-axes = plt.gca()
-plot(axes)
-plt.show()
-
-# if 1:
-# plt.spy(mtx)
-# plt.show()
-=======
 # print(np.min(np.unique(rows)), np.max(np.unique(rows)))
 # print(np.min(np.unique(cols)), np.max(np.unique(cols)))
-print(size)
+# print(size)
 
 print('x',np.linalg.matrix_rank(mtx.todense()[:8,:8]))
 
@@ -78,7 +68,6 @@ if 0:
 if 0:
     plt.spy(mtx)
     plt.show()
->>>>>>> 2a1e9c36480d580c259ee2a0a3c8af2b9a9ae558
 
 # print(data)
 # print(rows)
@@ -103,7 +92,7 @@ if 0:
 
 def compute_force():
     vecF = np.zeros(2*num_nodes_x*num_nodes_y + 2*num_nodes_y,);
-    vecF[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2+1] = -1e0;
+    vecF[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2] = 10 #1e0;
     return vecF
 
 f = compute_force()
@@ -119,6 +108,7 @@ else:
     u = scipy.linalg.lu_solve(lu, f)
 
 deflected_nodes = u[:num_nodes_x*num_nodes_y*2].reshape((num_nodes_x, num_nodes_y, 2))
+print(u[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2])
 
 if 1:
     axes = plt.gca()

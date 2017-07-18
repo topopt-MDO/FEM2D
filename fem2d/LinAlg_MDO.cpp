@@ -111,6 +111,75 @@ void print(vector<vector<vector<_Scalar> > >& T){
     } 
 }
 
+Matrix operator*(Matrix& input, double a){
+    int n = input.size(), m = input[0].size();
+    Matrix output;
+    output.resize(n, Vector(m,0.0));
+    
+    for (int i = 0; i < n; i ++){
+        for (int j = 0; j < m; j ++){
+            output[i][j] = input[i][j] * a;        
+        }
+    }
+    return output;
+}
+
+Vector operator*(Vector& input, double a){
+    int n = input.size();
+    Vector output;
+    output.resize(n, 0);
+    for (int i = 0; i < n; i ++){
+        output[i] = input[i] * a;
+    }
+    return output;
+}
+
+Matrix operator+(Matrix& input, double a){
+    int n = input.size(), m = input[0].size();
+    Matrix output;
+    output.resize(n, Vector(m,0.0));
+
+    for (int i = 0; i < n; i ++){
+        for (int j = 0; j < m; j ++){
+            output[i][j] = input[i][j] + a;
+        }
+    }
+    return output;
+}
+
+Matrix operator+(Matrix& input, Matrix& input2){
+    int n = input.size(), m = input[0].size();
+    Matrix output;
+    output.resize(n, Vector(m,0.0));
+    for (int i = 0; i < n; i ++){
+        for (int j = 0; j < m; j ++){
+            output[i][j] = input[i][j] + input2[i][j];
+        }
+    }
+    return output;
+}
+
+Vector operator+(Vector& input, double a){
+    int n = input.size();
+    Vector output;
+    output.resize(n, 0);
+
+    for (int i = 0; i < n; i ++){
+        output[i] = input[i] + a;
+    }
+    return output;
+}
+
+Vector operator+(Vector& input, Vector& input2){
+    int n = input.size();
+    Vector output;
+    output.resize(n, 0.0);
+    for (int i = 0; i < n; i ++){
+            output[i] = input[i] + input2[i];
+    }
+    return output;
+}
+
 
 #if __DEBUGFLAG__
 int main(){

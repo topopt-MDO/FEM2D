@@ -19,12 +19,12 @@ FEMSolver::FEMSolver(
   compute_nodes();
   compute_elems();
   compute_D(E, nu);
-
+  // print(D_voigt);
   compute_Ke();
 }
 
 void FEMSolver::compute_D(double E, double nu){
-  double sc = E/(1-nu*nu);
+  double sc = E/(1.0  -nu*nu);
 
   // E / (1 - nu^2) *
   // [ 1, nu, 0       ]
@@ -80,7 +80,12 @@ void FEMSolver::compute_nodes() {
 
 void FEMSolver::compute_Ke(){
   Matrix B;
-  B.resize(3, vector<double>(8,0.0));
+  double Area = (length_x*length_y)/((num_nodes_x-1)*(num_nodes_y-1));
+  cout << Area;
+  
+  vector<double> ri = {-1./sqrt(3), +1./sqrt(3), +1./sqrt(3), -1./sqrt(3)};
+  vector<double> si = {-1./sqrt(3), -1./sqrt(3), +1./sqrt(3), +1./sqrt(3)};
+  vector<double> wi = {1, 1, 1, 1};
 
   // u = N1 * u1 + N2 * u2 + N3 * u3 + N4 * u4
   // v = N1 * v1 + N2 * v2 + N3 * v3 + N4 * v4
@@ -89,6 +94,59 @@ void FEMSolver::compute_Ke(){
   // N2 = 0.25 * (1 + r) * (1 - s);
   // N3 = 0.25 * (1 + r) * (1 + s);
   // N4 = 0.25 * (1 - r) * (1 + s);
+  Ke_.resize(8, vector<double>(8,0.0));
+
+  for (int gg = 0; gg < wi.size(); gg++){
+    B.resize(3, vector<double>(8,0.0));
+    double r = ri[gg], s = si[gg], w = wi[gg];
+
+    B[0][0] = -0.25 * (1-s) * dr_dx;
+    B[0][1] = 0.;
+    B[0][2] =  0.25 * (1-s) * dr_dx;
+    B[0][3] = 0.;
+    B[0][4] =  0.25 * (1+s) * dr_dx;
+    B[0][5] = 0.;
+    B[0][6] = -0.25 * (1+s) * dr_dx;
+    B[0][7] = 0.;
+
+    // dv_dy
+    B[1][0] = 0;
+    B[1][1] = -0.25 * (1-r) * ds_dy;
+    B[1][2] = 0.;
+    B[1][3] = -0.25 * (1+r) * ds_dy;
+    B[1][4] = 0.;
+    B[1][5] =  0.25 * (1+r) * ds_dy;
+    B[1][6] = 0.;
+    B[1][7] =  0.25 * (1-r) * ds_dy;
+
+    // du_dy
+    B[2][0] = -0.25 * (1-r) * ds_dy;
+    //B[2][1] = 0.;
+    B[2][2] = -0.25 * (1+r) * ds_dy;
+    //B[2][3] = 0.;
+    B[2][4] =  0.25 * (1+r) * ds_dy;
+    //B[2][5] = 0.;
+    B[2][6] =  0.25 * (1-r) * ds_dy;
+    //B[2][7] = 0.;
+
+    // dv_dx
+    //B[2][0] = 0;
+    B[2][1] = -0.25 * (1-s) * dr_dx;
+    //B[2][2] = 0.;
+    B[2][3] =  0.25 * (1-s) * dr_dx;
+    //B[2][4] = 0.;
+    B[2][5] =  0.25 * (1+s) * dr_dx;
+    //B[2][6] = 0.;
+    B[2][7] = -0.25 * (1+s) * dr_dx;
+
+    
+    Matrix BT = transpose(B);
+    Matrix BD_tmp = dot(BT, D_voigt);
+    Matrix BDB = dot(BD_tmp, B);
+    double detjw = Area/4.0*w;
+    BDB = BDB * detjw;
+    Ke_ = Ke_ + BDB;
+  }
 
   // N
   // [N1  0]
@@ -96,51 +154,50 @@ void FEMSolver::compute_Ke(){
   // [N2  0]
   // ...
 
-  // du_dx
-  B[0][0] += -0.25 * dr_dx;
-  B[0][1] += 0.;
-  B[0][2] +=  0.25 * dr_dx;
-  B[0][3] += 0.;
-  B[0][4] +=  0.25 * dr_dx;
-  B[0][5] += 0.;
-  B[0][6] += -0.25 * dr_dx;
-  B[0][7] += 0.;
+  // du_dx (WIP)
+  
 
-  // dv_dy
-  B[1][0] += 0;
-  B[1][1] += -0.25 * ds_dy;
-  B[1][2] += 0.;
-  B[1][3] += -0.25 * ds_dy;
-  B[1][4] += 0.;
-  B[1][5] +=  0.25 * ds_dy;
-  B[1][6] += 0.;
-  B[1][7] +=  0.25 * ds_dy;
+  // du_dx .. (Jun 14)
+  // B[0][0] += -0.25 * dr_dx;
+  // B[0][1] += 0.;
+  // B[0][2] +=  0.25 * dr_dx;
+  // B[0][3] += 0.;
+  // B[0][4] +=  0.25 * dr_dx;
+  // B[0][5] += 0.;
+  // B[0][6] += -0.25 * dr_dx;
+  // B[0][7] += 0.;
 
-  // du_dy
-  B[2][0] += -0.25 * ds_dy;
-  B[2][1] += 0.;
-  B[2][2] += -0.25 * ds_dy;
-  B[2][3] += 0.;
-  B[2][4] +=  0.25 * ds_dy;
-  B[2][5] += 0.;
-  B[2][6] +=  0.25 * ds_dy;
-  B[2][7] += 0.;
+  // // dv_dy
+  // B[1][0] += 0;
+  // B[1][1] += -0.25 * ds_dy;
+  // B[1][2] += 0.;
+  // B[1][3] += -0.25 * ds_dy;
+  // B[1][4] += 0.;
+  // B[1][5] +=  0.25 * ds_dy;
+  // B[1][6] += 0.;
+  // B[1][7] +=  0.25 * ds_dy;
 
-  // dv_dx
-  B[2][0] += 0;
-  B[2][1] += -0.25 * dr_dx;
-  B[2][2] += 0.;
-  B[2][3] +=  0.25 * dr_dx;
-  B[2][4] += 0.;
-  B[2][5] +=  0.25 * dr_dx;
-  B[2][6] += 0.;
-  B[2][7] += -0.25 * dr_dx;
+  // // du_dy
+  // B[2][0] += -0.25 * ds_dy;
+  // B[2][1] += 0.;
+  // B[2][2] += -0.25 * ds_dy;
+  // B[2][3] += 0.;
+  // B[2][4] +=  0.25 * ds_dy;
+  // B[2][5] += 0.;
+  // B[2][6] +=  0.25 * ds_dy;
+  // B[2][7] += 0.;
 
-  Ke_.resize(8, vector<double>(8,0.0));
+  // // dv_dx
+  // B[2][0] += 0;
+  // B[2][1] += -0.25 * dr_dx;
+  // B[2][2] += 0.;
+  // B[2][3] +=  0.25 * dr_dx;
+  // B[2][4] += 0.;
+  // B[2][5] +=  0.25 * dr_dx;
+  // B[2][6] += 0.;
+  // B[2][7] += -0.25 * dr_dx;
 
-  Matrix BT = transpose(B);
-  Matrix BD_tmp = dot(BT, D_voigt);
-  Ke_ = dot(BD_tmp, B);
+
 }
 
 void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
@@ -168,12 +225,12 @@ void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
     for (int inode_y = 0; inode_y < num_nodes_y; inode_y++) {
       idof = inode_x * num_nodes_y * 2 + inode_y * 2 + k;
 
-      data[index] = 1.0;
+      data[index] = 1;
       rows[index] = idof;
       cols[index] = inode_y * 2 + k + num_dofs;
       index += 1;
 
-      data[index] = 1.0;
+      data[index] = 1;
       rows[index] = inode_y * 2 + k + num_dofs;
       cols[index] = idof;
       index += 1;
