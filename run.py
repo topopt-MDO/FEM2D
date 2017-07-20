@@ -9,6 +9,7 @@ from fem2d import PyFEMSolver
 
 length_x = 1
 length_y = 1
+
 num_nodes_x = 11
 num_nodes_y = 11
 E = 1000.
@@ -92,7 +93,8 @@ if 0:
 
 def compute_force():
     vecF = np.zeros(2*num_nodes_x*num_nodes_y + 2*num_nodes_y,);
-    vecF[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2+1] = 10 #1e0;
+    vecF[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2+1] = -10 #1e0;
+
     return vecF
 
 f = compute_force()
