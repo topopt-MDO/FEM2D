@@ -107,6 +107,7 @@ void FEMSolver::compute_Ke(){
   wi[2] = 1;
   wi[3] = 1;
 
+
   // u = N1 * u1 + N2 * u2 + N3 * u3 + N4 * u4
   // v = N1 * v1 + N2 * v2 + N3 * v3 + N4 * v4
 
@@ -167,57 +168,6 @@ void FEMSolver::compute_Ke(){
     BDB = BDB * detjw;
     Ke_ = Ke_ + BDB;
   }
-
-  // N
-  // [N1  0]
-  // [ 0 N1]
-  // [N2  0]
-  // ...
-
-  // du_dx (WIP)
-
-
-  // du_dx .. (Jun 14)
-  // B[0][0] += -0.25 * dr_dx;
-  // B[0][1] += 0.;
-  // B[0][2] +=  0.25 * dr_dx;
-  // B[0][3] += 0.;
-  // B[0][4] +=  0.25 * dr_dx;
-  // B[0][5] += 0.;
-  // B[0][6] += -0.25 * dr_dx;
-  // B[0][7] += 0.;
-
-  // // dv_dy
-  // B[1][0] += 0;
-  // B[1][1] += -0.25 * ds_dy;
-  // B[1][2] += 0.;
-  // B[1][3] += -0.25 * ds_dy;
-  // B[1][4] += 0.;
-  // B[1][5] +=  0.25 * ds_dy;
-  // B[1][6] += 0.;
-  // B[1][7] +=  0.25 * ds_dy;
-
-  // // du_dy
-  // B[2][0] += -0.25 * ds_dy;
-  // B[2][1] += 0.;
-  // B[2][2] += -0.25 * ds_dy;
-  // B[2][3] += 0.;
-  // B[2][4] +=  0.25 * ds_dy;
-  // B[2][5] += 0.;
-  // B[2][6] +=  0.25 * ds_dy;
-  // B[2][7] += 0.;
-
-  // // dv_dx
-  // B[2][0] += 0;
-  // B[2][1] += -0.25 * dr_dx;
-  // B[2][2] += 0.;
-  // B[2][3] +=  0.25 * dr_dx;
-  // B[2][4] += 0.;
-  // B[2][5] +=  0.25 * dr_dx;
-  // B[2][6] += 0.;
-  // B[2][7] += -0.25 * dr_dx;
-
-
 }
 
 void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
@@ -255,6 +205,24 @@ void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
       cols[index] = idof;
       index += 1;
     }
+  }
+}
+
+void FEMSolver::get_sensitivity(double* u, double* desvar, double* sensitivity){
+  double compliance = 0;
+  int index = 0;
+  double p = 3; // penalization parameter
+  for (int ielem_x = 0; ielem_x < num_nodes_x - 1; ielem_x++) {
+    for (int ielem_y = 0; ielem_y < num_nodes_y - 1; ielem_y++) {
+      double rho = desvar[index];
+      Vector u_dof(8);
+      for (int mm = 0; mm < 8; mm++){
+        u_dof[mm] = u[elems[ielem_x][ielem_y][mm]];
+        }      
+      Vector v1 = dot(Ke_,u_dof);
+      sensitivity[index] = -p*pow(desvar[index],p-1)*dot(v1,u_dof);
+      index += 1;
+    }    
   }
 }
 
