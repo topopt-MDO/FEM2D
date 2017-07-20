@@ -9,8 +9,8 @@ from fem2d import PyFEMSolver
 
 length_x = 1
 length_y = 1
-num_nodes_x = 10
-num_nodes_y = 10
+num_nodes_x = 11
+num_nodes_y = 11
 E = 1000.
 nu = 0.3 #0.3
 
@@ -92,7 +92,7 @@ if 0:
 
 def compute_force():
     vecF = np.zeros(2*num_nodes_x*num_nodes_y + 2*num_nodes_y,);
-    vecF[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2] = 10 #1e0;
+    vecF[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2+1] = 10 #1e0;
     return vecF
 
 f = compute_force()
@@ -110,8 +110,17 @@ else:
 deflected_nodes = u[:num_nodes_x*num_nodes_y*2].reshape((num_nodes_x, num_nodes_y, 2))
 print(u[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2])
 
-if 1:
+if 0:
     axes = plt.gca()
     plot(orig_nodes, axes)
     plot(orig_nodes + deflected_nodes * 1e0, axes, 'r')
     plt.show()
+
+sensitivity = np.zeros((num_nodes_x-1)*(num_nodes_y-1))
+desvar = np.ones((num_nodes_x-1)*(num_nodes_y-1))
+a.get_sensitivity(u[:num_nodes_x*num_nodes_y*2], desvar, sensitivity)
+
+[x_, y_] = np.meshgrid(np.linspace(0.5,9.5,10),np.linspace(0.5,9.5,10))
+plt.scatter(x_.flatten(order='F'),y_.flatten(order='F'), s = 200, c = sensitivity)
+plt.colorbar()
+plt.show()
