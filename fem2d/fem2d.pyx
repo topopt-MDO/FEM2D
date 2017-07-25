@@ -26,4 +26,3 @@ cdef class PyFEMSolver:
     def get_sensitivity(
             self, np.ndarray[double] u, np.ndarray[double] desvar, np.ndarray[double] sensitivity):
         self.thisptr.get_sensitivity(&u[0], &desvar[0], &sensitivity[0])
-
