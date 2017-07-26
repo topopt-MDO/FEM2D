@@ -12,7 +12,8 @@ public:
     double E, double nu
   );
   ~FEMSolver();
-  void get_stiffness_matrix(double* data, int* rows, int* cols);
+  void get_stiffness_matrix(double* multipliers, double* data, int* rows, int* cols);
+  void get_stiffness_matrix_derivs(double* states, double* data, int* rows, int* cols);
   void get_sensitivity(double* u, double* desvar, double* sensitivity);
 
 private:

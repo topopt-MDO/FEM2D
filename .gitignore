@@ -3,4 +3,6 @@ build/*
 *~
 fem2d/fem2d.cpp
 *__pycache__*
-*a.out
+*.out
+save/*
+*.html

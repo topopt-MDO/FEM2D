@@ -81,7 +81,6 @@ void FEMSolver::compute_nodes() {
 void FEMSolver::compute_Ke(){
   Matrix B;
   double Area = (length_x*length_y)/((num_nodes_x-1)*(num_nodes_y-1));
-  cout << Area;
 
   // vector<double> ri = {-1./sqrt(3), +1./sqrt(3), +1./sqrt(3), -1./sqrt(3)};
   // vector<double> si = {-1./sqrt(3), -1./sqrt(3), +1./sqrt(3), +1./sqrt(3)};
@@ -170,14 +169,14 @@ void FEMSolver::compute_Ke(){
   }
 }
 
-void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
+void FEMSolver::get_stiffness_matrix(double* multipliers, double* data, int* rows, int* cols) {
   int index = 0;
 
   for (int ielem_x = 0; ielem_x < num_nodes_x - 1; ielem_x++) {
     for (int ielem_y = 0; ielem_y < num_nodes_y - 1; ielem_y++) {
       for (int imat_x = 0; imat_x < 8; imat_x++) {
         for (int imat_y = 0; imat_y < 8; imat_y++) {
-          data[index] = Ke_[imat_x][imat_y];
+          data[index] = Ke_[imat_x][imat_y] * multipliers[ielem_x * (num_nodes_y - 1) + ielem_y];
           rows[index] = elems[ielem_x][ielem_y][imat_x];
           cols[index] = elems[ielem_x][ielem_y][imat_y];
           index += 1;
@@ -204,6 +203,23 @@ void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
       rows[index] = inode_y * 2 + k + num_dofs;
       cols[index] = idof;
       index += 1;
+    }
+  }
+}
+
+void FEMSolver::get_stiffness_matrix_derivs(double* states, double* data, int* rows, int* cols) {
+  int index = 0;
+
+  for (int ielem_x = 0; ielem_x < num_nodes_x - 1; ielem_x++) {
+    for (int ielem_y = 0; ielem_y < num_nodes_y - 1; ielem_y++) {
+      for (int imat_x = 0; imat_x < 8; imat_x++) {
+        for (int imat_y = 0; imat_y < 8; imat_y++) {
+          data[index] = Ke_[imat_x][imat_y] * states[elems[ielem_x][ielem_y][imat_y]];
+          rows[index] = elems[ielem_x][ielem_y][imat_x];
+          cols[index] = ielem_x * (num_nodes_y - 1) + ielem_y;
+          index += 1;
+        }
+      }
     }
   }
 }

@@ -5,7 +5,7 @@ import scipy.sparse
 import scipy.sparse.linalg
 import scipy.linalg
 
-from fem2d import PyFEMSolver
+from fem2d.fem2d import PyFEMSolver
 
 length_x = 1
 length_y = 1
@@ -22,7 +22,8 @@ data = np.zeros(size)
 rows = np.zeros(size, np.int32)
 cols = np.zeros(size, np.int32)
 
-a.get_stiffness_matrix(data, rows, cols)
+multipliers = np.ones((num_nodes_x - 1) * (num_nodes_y - 1))
+a.get_stiffness_matrix(multipliers, data, rows, cols)
 
 orig_nodes = np.zeros((num_nodes_x, num_nodes_y, 2))
 for ix in range(num_nodes_x):

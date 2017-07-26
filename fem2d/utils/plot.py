@@ -33,13 +33,28 @@ def get_mesh(num_nodes_x, num_nodes_y, length_x, length_y):
     return orig_nodes
 
 
-def get_def_mesh(orig_nodes, disp, num_nodes_x, num_nodes_y, scale=1e0):
-    return orig_nodes + disp.reshape((num_nodes_x, num_nodes_y, 2)) * scale
-
-
 def plot_solution(orig_nodes, deflected_nodes=None):
     axes = plt.gca()
     _plot(orig_nodes, axes)
     if deflected_nodes is not None:
         _plot(deflected_nodes, axes, 'r')
     plt.show()
+
+
+def plot_contour(mesh, field):
+    axes = plt.gca()
+    plt.contourf(mesh[:, :, 0], mesh[:, :, 1], field)
+    plt.show()
+
+
+def plot_imshow(mesh, field, save=None):
+    x1 = np.min(mesh[:, :, 0])
+    x2 = np.max(mesh[:, :, 0])
+    y1 = np.min(mesh[:, :, 1])
+    y2 = np.max(mesh[:, :, 1])
+    plt.imshow(field.T, cmap='Greys', extent=[x1, x2, y1, y2])
+    # plt.colorbar(im, orientation='horizontal')
+    if save is not None:
+        plt.savefig(save)
+    else:
+        plt.show()
