@@ -3,31 +3,53 @@ import numpy as np
 from openmdao.api import Problem, view_model, ScipyOptimizer, pyOptSparseDriver
 
 from fem2d.fem2d import PyFEMSolver
-from fem2d.openmdao.fem2d_group import FEM2DGroup
-from fem2d.utils.plot import get_mesh, plot_solution, plot_contour, plot_imshow
+from fem2d.openmdao.fem2d_simp_group import FEM2DSimpGroup
+from fem2d.openmdao.fem2d_param_group import FEM2DParamGroup
+from fem2d.utils.plot import get_mesh, plot_solution, plot_contour
 from fem2d.utils.forces import get_forces
 
 
-num_nodes_x = 41
-num_nodes_y = 21
+num_nodes_x = 91
+num_nodes_y = 31
 
-length_x = 2
+num_param_x = 61
+num_param_y = 31
+
+if 0:
+    num_nodes_x = num_param_x = 10; num_nodes_y = num_param_y = 5
+
+length_x = 3
 length_y = 1
 
 E = 1000.
 nu = 0.3
 f = -10
 p = 3
-w = 0.9
+w = 0.
+quad_order = 3
+volume_fraction = 0.6
 
 fem_solver = PyFEMSolver(num_nodes_x, num_nodes_y, length_x, length_y, E, nu)
 
 forces = get_forces(num_nodes_x, num_nodes_y, f=f)
 nodes = get_mesh(num_nodes_x, num_nodes_y, length_x, length_y)
 
-model = FEM2DGroup(
-    fem_solver=fem_solver, num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y, forces=forces, p=p,
-    nodes=nodes, w=w)
+if 0:
+    model = FEM2DSimpGroup(
+        fem_solver=fem_solver,
+        num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y,
+        forces=forces, p=p,
+        nodes=nodes, w=w,
+        volume_fraction=volume_fraction)
+else:
+    model = FEM2DParamGroup(
+        fem_solver=fem_solver,
+        length_x=length_x, length_y=length_y,
+        num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y,
+        num_param_x=num_param_x, num_param_y=num_param_y,
+        forces=forces, p=p,
+        nodes=nodes, w=w, quad_order=quad_order,
+        volume_fraction=volume_fraction)
 
 prob = Problem(model)
 
@@ -44,14 +66,17 @@ prob.driver.opt_settings['Verify level'] = -1
 
 prob.setup()
 
-prob.run_driver()
-# prob.run_model()
-# prob.check_partials(compact_print=True)
+view_model(prob)
+exit()
 
-# view_model(prob)
+if 1:
+    prob.run_driver()
+else:
+    prob.run_model()
+    prob.check_partials(compact_print=True)
 
 disp = prob['disp_comp.disp']
-densities = prob['inputs_comp.densities'].reshape((num_nodes_x - 1, num_nodes_y - 1))
+densities = prob['penalization_comp.y'].reshape((num_nodes_x - 1, num_nodes_y - 1))
 
 nodal_densities = np.zeros((num_nodes_x, num_nodes_y))
 nodal_densities[:-1, :-1] += densities
@@ -68,4 +93,4 @@ scale = 1e0
 disp2 = disp.reshape((num_nodes_x, num_nodes_y, 2))[:, :, 1] * scale
 # plot_solution(orig_nodes, deflected_nodes=deflected_nodes)
 # plot_contour(nodes, field=nodal_densities)
-plot_imshow(nodes, densities)
+plot_contour(nodes, densities)

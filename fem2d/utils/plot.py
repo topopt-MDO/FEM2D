@@ -33,6 +33,16 @@ def get_mesh(num_nodes_x, num_nodes_y, length_x, length_y):
     return orig_nodes
 
 
+def get_gpt_mesh(num_nodes_x, num_nodes_y, length_x, length_y, quad_order):
+    orig_nodes = np.zeros((num_nodes_x, num_nodes_y, 2))
+    for ix in range(num_nodes_x - 1):
+        for iy in range(num_nodes_y - 1):
+            orig_nodes[ix, iy, 0] = ix / (num_nodes_x - 1) * length_x
+            orig_nodes[ix, iy, 1] = iy / (num_nodes_y - 1) * length_y
+
+    return orig_nodes
+
+
 def plot_solution(orig_nodes, deflected_nodes=None):
     axes = plt.gca()
     _plot(orig_nodes, axes)
@@ -41,20 +51,21 @@ def plot_solution(orig_nodes, deflected_nodes=None):
     plt.show()
 
 
-def plot_contour(mesh, field):
-    axes = plt.gca()
-    plt.contourf(mesh[:, :, 0], mesh[:, :, 1], field)
-    plt.show()
+def plot_contour(mesh, field, plot_boundary=False, plot_fill=False):
+    if plot_boundary:
+        # new_mesh = 0.25 * (mesh[:-1, :-1] + mesh[1:, :-1] + mesh[:-1, 1:] + mesh[1:, 1:])
+        # plt.contour(new_mesh[:, :, 0], new_mesh[:, :, 1], field, levels=[0])
+        plt.contour(mesh[:, ::-1, 0], mesh[:, ::-1, 1], field, levels=[0])
+    if plot_fill:
+        x1 = np.min(mesh[:, :, 0])
+        x2 = np.max(mesh[:, :, 0])
+        y1 = np.min(mesh[:, :, 1])
+        y2 = np.max(mesh[:, :, 1])
+        plt.imshow(field.T, cmap='Greys', extent=[x1, x2, y1, y2])
 
-
-def plot_imshow(mesh, field, save=None):
-    x1 = np.min(mesh[:, :, 0])
-    x2 = np.max(mesh[:, :, 0])
-    y1 = np.min(mesh[:, :, 1])
-    y2 = np.max(mesh[:, :, 1])
-    plt.imshow(field.T, cmap='Greys', extent=[x1, x2, y1, y2])
-    # plt.colorbar(im, orientation='horizontal')
+def plot_save(save=None):
     if save is not None:
         plt.savefig(save)
     else:
         plt.show()
+    plt.clf()

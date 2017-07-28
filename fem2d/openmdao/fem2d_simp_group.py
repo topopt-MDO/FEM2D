@@ -3,15 +3,18 @@ import numpy as np
 from openmdao.api import Group, IndepVarComp
 
 from fem2d.openmdao.penalization_comp import PenalizationComp
+from fem2d.openmdao.heaviside_comp import HeavisideComp
 from fem2d.openmdao.states_comp import StatesComp
 from fem2d.openmdao.disp_comp import DispComp
 from fem2d.openmdao.compliance_comp import ComplianceComp
 from fem2d.openmdao.weight_comp import WeightComp
 from fem2d.openmdao.objective_comp import ObjectiveComp
 from fem2d.fem2d import PyFEMSolver
+from fem2d.utils.rbf import get_rbf_mtx
+from fem2d.utils.bspline import get_bspline_mtx
 
 
-class FEM2DGroup(Group):
+class FEM2DSimpGroup(Group):
 
     def initialize(self):
         self.metadata.declare('fem_solver', type_=PyFEMSolver, required=True)
@@ -21,6 +24,7 @@ class FEM2DGroup(Group):
         self.metadata.declare('p', type_=(int, float), required=True)
         self.metadata.declare('w', type_=(int, float), required=True)
         self.metadata.declare('nodes', type_=np.ndarray, required=True)
+        self.metadata.declare('volume_fraction', type_=(int, float), required=True)
 
     def setup(self):
         fem_solver = self.metadata['fem_solver']
@@ -30,6 +34,7 @@ class FEM2DGroup(Group):
         p = self.metadata['p']
         w = self.metadata['w']
         nodes = self.metadata['nodes']
+        volume_fraction = self.metadata['volume_fraction']
 
         state_size = 2 * num_nodes_x * num_nodes_y + 2 * num_nodes_y
         disp_size = 2 * num_nodes_x * num_nodes_y
@@ -41,20 +46,25 @@ class FEM2DGroup(Group):
         comp = IndepVarComp()
         comp.add_output('rhs', val=rhs)
         comp.add_output('forces', val=forces)
-        comp.add_output('densities', shape=(num_nodes_x - 1) * (num_nodes_y - 1))
-        comp.add_design_var('densities', lower=0.1, upper=1.0)
+
+        comp.add_output('dvs', val=0.5, shape=(num_nodes_x - 1) * (num_nodes_y - 1))
+        comp.add_design_var('dvs', lower=0.01, upper=1.0)
+        # comp.add_design_var('x', lower=-4, upper=4)
         self.add_subsystem('inputs_comp', comp)
+        self.connect('inputs_comp.dvs', 'penalization_comp.x')
+        self.connect('inputs_comp.dvs', 'weight_comp.x')
 
         # penalization
-        comp = PenalizationComp(num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y, p=p, nodes=nodes)
+        comp = PenalizationComp(num=(num_nodes_x - 1) * (num_nodes_y - 1), p=p)
         self.add_subsystem('penalization_comp', comp)
-        self.connect('inputs_comp.densities', 'penalization_comp.densities')
+
+        self.connect('penalization_comp.y', 'states_comp.multipliers')
 
         # states
-        comp = StatesComp(fem_solver=fem_solver, num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y)
+        comp = StatesComp(fem_solver=fem_solver, num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y,
+            nodes=nodes)
         self.add_subsystem('states_comp', comp)
         self.connect('inputs_comp.rhs', 'states_comp.rhs')
-        self.connect('penalization_comp.multipliers', 'states_comp.multipliers')
 
         # disp
         comp = DispComp(num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y)
@@ -68,9 +78,9 @@ class FEM2DGroup(Group):
         self.connect('inputs_comp.forces', 'compliance_comp.forces')
 
         # weight
-        comp = WeightComp(num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y)
+        comp = WeightComp(num=(num_nodes_x - 1) * (num_nodes_y - 1))
+        comp.add_constraint('weight', upper=volume_fraction)
         self.add_subsystem('weight_comp', comp)
-        self.connect('penalization_comp.multipliers', 'weight_comp.multipliers')
 
         # objective
         comp = ObjectiveComp(w=w)

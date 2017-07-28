@@ -3,10 +3,9 @@ import numpy as np
 from openmdao.api import ExplicitComponent
 
 
-class PenalizationComp(ExplicitComponent):
+class HeavisideComp(ExplicitComponent):
 
     def initialize(self):
-        self.metadata.declare('p', type_=(int, float), required=True)
         self.metadata.declare('num', type_=int, required=True)
 
     def setup(self):
@@ -19,11 +18,7 @@ class PenalizationComp(ExplicitComponent):
         self.declare_partials('y', 'x', rows=arange, cols=arange)
 
     def compute(self, inputs, outputs):
-        p = self.metadata['p']
-
-        outputs['y'] = inputs['x'] ** p
+        outputs['y'] = 0.5 + 0.5 * np.tanh(inputs['x']) + 0.01
 
     def compute_partials(self, inputs, outputs, partials):
-        p = self.metadata['p']
-
-        partials['y', 'x'] = p * inputs['x'] ** (p - 1)
+        partials['y', 'x'] = 0.5 / np.cosh(inputs['x']) ** 2
