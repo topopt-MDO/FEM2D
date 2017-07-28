@@ -236,7 +236,7 @@ void FEMSolver::get_sensitivity(double* u, double* desvar, double* sensitivity){
         u_dof[mm] = u[elems[ielem_x][ielem_y][mm]];
         }
       Vector v1 = dot(Ke_,u_dof);
-      sensitivity[index] = -p*pow(desvar[index],p-1)*dot(v1,u_dof);
+      sensitivity[index] = -0.5*p*pow(desvar[index],p-1)*dot(v1,u_dof);
       index += 1;
     }
   }
