@@ -36,7 +36,7 @@ class FEM2DSimpGroup(Group):
         nodes = self.metadata['nodes']
         volume_fraction = self.metadata['volume_fraction']
 
-        num = (num_nodes_x - 1) * (num_nodes_y - 1)
+        num = num_nodes_x * num_nodes_y
 
         state_size = 2 * num_nodes_x * num_nodes_y + 2 * num_nodes_y
         disp_size = 2 * num_nodes_x * num_nodes_y
