@@ -36,6 +36,8 @@ class FEM2DSimpGroup(Group):
         nodes = self.metadata['nodes']
         volume_fraction = self.metadata['volume_fraction']
 
+        num = (num_nodes_x - 1) * (num_nodes_y - 1)
+
         state_size = 2 * num_nodes_x * num_nodes_y + 2 * num_nodes_y
         disp_size = 2 * num_nodes_x * num_nodes_y
 
@@ -47,7 +49,7 @@ class FEM2DSimpGroup(Group):
         comp.add_output('rhs', val=rhs)
         comp.add_output('forces', val=forces)
 
-        comp.add_output('dvs', val=0.5, shape=(num_nodes_x - 1) * (num_nodes_y - 1))
+        comp.add_output('dvs', val=0.5, shape=num)
         comp.add_design_var('dvs', lower=0.01, upper=1.0)
         # comp.add_design_var('x', lower=-4, upper=4)
         self.add_subsystem('inputs_comp', comp)
@@ -55,7 +57,7 @@ class FEM2DSimpGroup(Group):
         self.connect('inputs_comp.dvs', 'weight_comp.x')
 
         # penalization
-        comp = PenalizationComp(num=(num_nodes_x - 1) * (num_nodes_y - 1), p=p)
+        comp = PenalizationComp(num=num, p=p)
         self.add_subsystem('penalization_comp', comp)
 
         self.connect('penalization_comp.y', 'states_comp.multipliers')
@@ -78,7 +80,7 @@ class FEM2DSimpGroup(Group):
         self.connect('inputs_comp.forces', 'compliance_comp.forces')
 
         # weight
-        comp = WeightComp(num=(num_nodes_x - 1) * (num_nodes_y - 1))
+        comp = WeightComp(num=num)
         comp.add_constraint('weight', upper=volume_fraction)
         self.add_subsystem('weight_comp', comp)
 

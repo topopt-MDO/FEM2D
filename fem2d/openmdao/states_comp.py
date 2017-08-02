@@ -33,24 +33,24 @@ class StatesComp(ImplicitComponent):
         self.counter = 0
 
         state_size = 2 * num_nodes_x * num_nodes_y + 2 * num_nodes_y
-        multiplier_size = (num_nodes_x - 1) * (num_nodes_y - 1)
+        num_nodes = num_nodes_x * num_nodes_y
 
-        self.add_input('multipliers', shape=multiplier_size)
+        self.add_input('multipliers', shape=num_nodes)
         if quad_order is not None:
             self.add_input('plot_var', shape=(num_nodes_x - 1) * (num_nodes_y - 1) * quad_order ** 2)
             self.add_input('plot_var2', shape=(num_nodes_x - 1) * (num_nodes_y - 1) * quad_order ** 2)
         self.add_input('rhs', shape=state_size)
         self.add_output('states', shape=state_size)
 
-        size = (num_nodes_x - 1) * (num_nodes_y - 1) * 64 + 2 * 2 * num_nodes_y
+        size = (num_nodes_x - 1) * (num_nodes_y - 1) * 64 * 4 + 2 * 2 * num_nodes_y
         self.data = data = np.zeros(size)
         self.rows = rows = np.zeros(size, np.int32)
         self.cols = cols = np.zeros(size, np.int32)
 
-        fem_solver.get_stiffness_matrix(np.ones(multiplier_size), data, rows, cols)
+        fem_solver.get_stiffness_matrix(np.ones(num_nodes), data, rows, cols)
         self.declare_partials('states', 'states', rows=rows, cols=cols)
 
-        size = (num_nodes_x - 1) * (num_nodes_y - 1) * 64
+        size = (num_nodes_x - 1) * (num_nodes_y - 1) * 64 * 4
         self.data_d = data_d = np.zeros(size)
         self.rows_d = rows_d = np.zeros(size, np.int32)
         self.cols_d = cols_d = np.zeros(size, np.int32)
