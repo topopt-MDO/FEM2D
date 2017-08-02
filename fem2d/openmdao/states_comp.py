@@ -2,10 +2,15 @@ import numpy as np
 import scipy.sparse
 import scipy.sparse.linalg
 
+try:
+    import cPickle as pickle
+except:
+    import pickle
+
 from openmdao.api import ImplicitComponent
 
 from fem2d.fem2d import PyFEMSolver
-from fem2d.utils.plot import plot_contour, plot_save
+from fem2d.utils.plot import plot_contour, plot_save, plot_mesh
 
 
 class StatesComp(ImplicitComponent):
@@ -121,7 +126,7 @@ class StatesComp(ImplicitComponent):
 
     def solve_nonlinear(self, inputs, outputs):
         self.mtx = self._get_mtx(inputs)
-        self.ilu = scipy.sparse.linalg.spilu(self.mtx, drop_tol=1e-12)
+        self.ilu = scipy.sparse.linalg.spilu(self.mtx, drop_tol=1e-14)
 
         self._solve(outputs['states'], inputs['rhs'], 'fwd')
         self._compute_mtx_derivs(outputs)
@@ -137,36 +142,29 @@ class StatesComp(ImplicitComponent):
         partials['states', 'states'] = self.data
         partials['states', 'multipliers'] = self.data_d
 
-        if self.counter % 1 == 0:
-            if quad_order is not None:
-                plot_contour(
-                    self.metadata['gpt_mesh'],
-                    inputs['plot_var2'].reshape((
-                        (num_nodes_x - 1) * quad_order,
-                        (num_nodes_y - 1) * quad_order,
-                    )),
-                    plot_fill=True,
-                )
-            else:
-                plot_contour(
-                    self.mesh, inputs['multipliers'].reshape((num_nodes_x - 1, num_nodes_y - 1)),
-                    plot_fill=True,
-                )
+        self.ilu = scipy.sparse.linalg.spilu(self.mtx, drop_tol=1e-14)
 
+        if self.counter == 0:
+            raw = {}
+            raw['quad_order'] = quad_order
+            raw['mesh'] = self.mesh
             if quad_order is not None:
-                plot_contour(
-                    self.metadata['gpt_mesh'],
-                    inputs['plot_var'].reshape((
-                        (num_nodes_x - 1) * quad_order,
-                        (num_nodes_y - 1) * quad_order,
-                    )),
-                    plot_boundary=True,
-                )
+                raw['gpt_mesh'] = self.metadata['gpt_mesh']
+            filename = 'const.pkl'
+            with open(filename, 'wb') as f:
+                pickle.dump(raw, f)
 
-            plot_save(save='save/save%03i.png'%self.counter)
+        raw = {}
+        if quad_order is not None:
+            raw['fill'] = inputs['plot_var2']
+            raw['boundary'] = inputs['plot_var']
+        else:
+            raw['multipliers'] = inputs['multipliers']
+        filename = 'save/data%03i.pkl' % self.counter
+        with open(filename, 'wb') as f:
+            pickle.dump(raw, f)
+
         self.counter += 1
-
-        self.ilu = scipy.sparse.linalg.spilu(self.mtx, drop_tol=1e-12)
 
     def solve_linear(self, d_outputs, d_residuals, mode):
         if mode == 'fwd':

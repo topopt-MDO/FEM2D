@@ -1,8 +1,12 @@
 import numpy as np
 from scipy.interpolate import bisplrep, bisplev, RectBivariateSpline
 
+from fem2d.utils.coords import get_coord_tmp
 
-def get_bspline_mtx(coord_eval_x, coord_eval_y, coord_tmp, num_cp_x, num_cp_y, kx=4, ky=4):
+
+def get_bspline_mtx(coord_eval_x, coord_eval_y, num_cp_x, num_cp_y, kx=4, ky=4):
+    coord_tmp = get_coord_tmp(num_cp_x, num_cp_y)
+
     num_eval_x = coord_eval_x.shape[0]
     num_eval_y = coord_eval_y.shape[0]
 

@@ -62,10 +62,15 @@ class FEM2DParamGroup(Group):
         disp_size = 2 * num_nodes_x * num_nodes_y
 
         coord_eval_x, coord_eval_y = get_coord_eval(num_nodes_x, num_nodes_y, quad_order)
-        coord_tmp = get_coord_tmp(num_param_x, num_param_y)
-        param_mtx = get_bspline_mtx(
-            coord_eval_x, coord_eval_y, coord_tmp,
-            num_param_x, num_param_y, kx=4, ky=4)
+
+        if 1:
+            param_mtx = get_bspline_mtx(
+                coord_eval_x, coord_eval_y,
+                num_param_x, num_param_y, kx=4, ky=4)
+        else:
+            param_mtx = get_rbf_mtx(
+                coord_eval_x, coord_eval_y,
+                num_param_x, num_param_y, kx=4, ky=4)
 
         rhs = np.zeros(state_size)
         rhs[:disp_size] = forces
@@ -91,18 +96,23 @@ class FEM2DParamGroup(Group):
         self.add_subsystem('parametrization_comp', comp)
         self.connect('parametrization_comp.y', 'states_comp.plot_var')
 
-        if 0:
-            self.connect('parametrization_comp.y', 'averaging_comp.x')
-            comp = AveragingComp(
-                num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y, quad_order=quad_order)
-            self.add_subsystem('averaging_comp', comp)
-            self.connect('averaging_comp.y', 'heaviside_comp.x')
+        # if 0:
+        #     self.connect('parametrization_comp.y', 'averaging_comp.x')
+        #     comp = AveragingComp(
+        #         num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y, quad_order=quad_order)
+        #     self.add_subsystem('averaging_comp', comp)
+        #     self.connect('averaging_comp.y', 'heaviside_comp.x')
+        #
+        #     comp = HeavisideComp(num=num)
+        #     self.add_subsystem('heaviside_comp', comp)
+        #     self.connect('heaviside_comp.y', 'penalization_comp.x')
+        #     self.connect('heaviside_comp.y', 'weight_comp.x')
+        #
+        #     comp = PenalizationComp(num=num, p=p)
+        #     self.add_subsystem('penalization_comp', comp)
+        #     self.connect('penalization_comp.y', 'states_comp.multipliers')
 
-            comp = HeavisideComp(num=num)
-            self.add_subsystem('heaviside_comp', comp)
-            self.connect('heaviside_comp.y', 'penalization_comp.x')
-            self.connect('heaviside_comp.y', 'weight_comp.x')
-        else:
+        if 1:
             self.connect('parametrization_comp.y', 'heaviside_comp.x')
             comp = HeavisideComp(num=num * quad_order ** 2)
             self.add_subsystem('heaviside_comp', comp)
@@ -115,9 +125,30 @@ class FEM2DParamGroup(Group):
             self.connect('averaging_comp.y', 'penalization_comp.x')
             self.connect('averaging_comp.y', 'weight_comp.x')
 
-        comp = PenalizationComp(num=num, p=p)
-        self.add_subsystem('penalization_comp', comp)
-        self.connect('penalization_comp.y', 'states_comp.multipliers')
+            comp = PenalizationComp(num=num, p=p)
+            self.add_subsystem('penalization_comp', comp)
+            self.connect('penalization_comp.y', 'states_comp.multipliers')
+        else:
+            self.connect('parametrization_comp.y', 'heaviside_comp.x')
+            comp = HeavisideComp(num=num * quad_order ** 2)
+            self.add_subsystem('heaviside_comp', comp)
+            self.connect('heaviside_comp.y', 'penalization_comp.x')
+            self.connect('heaviside_comp.y', 'averaging_comp2.x')
+            self.connect('heaviside_comp.y', 'states_comp.plot_var2')
+
+            comp = AveragingComp(
+                num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y, quad_order=quad_order)
+            self.add_subsystem('averaging_comp2', comp)
+            self.connect('averaging_comp2.y', 'weight_comp.x')
+
+            comp = PenalizationComp(num=num * quad_order ** 2, p=p)
+            self.add_subsystem('penalization_comp', comp)
+            self.connect('penalization_comp.y', 'averaging_comp.x')
+
+            comp = AveragingComp(
+                num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y, quad_order=quad_order)
+            self.add_subsystem('averaging_comp', comp)
+            self.connect('averaging_comp.y', 'states_comp.multipliers')
 
         # states
         comp = StatesComp(

@@ -63,9 +63,19 @@ def plot_contour(mesh, field, plot_boundary=False, plot_fill=False):
         y2 = np.max(mesh[:, :, 1])
         plt.imshow(field.T, cmap='Greys', extent=[x1, x2, y1, y2])
 
-def plot_save(save=None):
+def plot_mesh(num_nodes_x, num_nodes_y, length_x, length_y):
+    lins_x = np.linspace(0, length_x, num_nodes_x)
+    lins_y = np.linspace(0, length_y, num_nodes_y)
+
+    for ix in range(num_nodes_x):
+        plt.plot([lins_x[ix]] * 2, [0, length_y], 'grey', linewidth=0.4)
+
+    for iy in range(num_nodes_y):
+        plt.plot([0, length_x], [lins_y[iy]] * 2, 'grey', linewidth=0.4)
+
+def plot_save(save=None, show=False):
     if save is not None:
         plt.savefig(save)
-    else:
+    if show:
         plt.show()
     plt.clf()
