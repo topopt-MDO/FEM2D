@@ -22,6 +22,6 @@ class ComplianceComp(ExplicitComponent):
     def compute(self, inputs, outputs):
         outputs['compliance'] = np.dot(inputs['disp'], inputs['forces'])
 
-    def compute_partials(self, inputs, outputs, partials):
+    def compute_partials(self, inputs, partials):
         partials['compliance', 'disp'][0, :] = inputs['forces']
         partials['compliance', 'forces'][0, :] = inputs['disp']

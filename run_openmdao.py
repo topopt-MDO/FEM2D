@@ -9,8 +9,8 @@ from fem2d.utils.plot import get_mesh, plot_solution, plot_contour
 from fem2d.utils.forces import get_forces
 
 
-num_nodes_x = 81
-num_nodes_y = 41
+num_nodes_x = 61
+num_nodes_y = 31
 
 num_param_x = 41
 num_param_y = 21
@@ -53,16 +53,16 @@ else:
 
 prob = Problem(model)
 
-# prob.driver = ScipyOptimizer()
-# prob.driver.options['optimizer'] = 'SLSQP'
-# prob.driver.options['tol'] = 1e-9
-# prob.driver.options['disp'] = True
+prob.driver = ScipyOptimizer()
+prob.driver.options['optimizer'] = 'SLSQP'
+prob.driver.options['tol'] = 1e-9
+prob.driver.options['disp'] = True
 
-prob.driver = pyOptSparseDriver()
-prob.driver.options['optimizer'] = 'SNOPT'
-prob.driver.opt_settings['Major optimality tolerance'] = 1e-6
-prob.driver.opt_settings['Major feasibility tolerance'] = 1e-7
-prob.driver.opt_settings['Verify level'] = -1
+# prob.driver = pyOptSparseDriver()
+# prob.driver.options['optimizer'] = 'SNOPT'
+# prob.driver.opt_settings['Major optimality tolerance'] = 1e-6
+# prob.driver.opt_settings['Major feasibility tolerance'] = 1e-7
+# prob.driver.opt_settings['Verify level'] = -1
 
 prob.setup()
 

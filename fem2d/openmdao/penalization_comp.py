@@ -23,7 +23,7 @@ class PenalizationComp(ExplicitComponent):
 
         outputs['y'] = inputs['x'] ** p
 
-    def compute_partials(self, inputs, outputs, partials):
+    def compute_partials(self, inputs, partials):
         p = self.metadata['p']
 
         partials['y', 'x'] = p * inputs['x'] ** (p - 1)

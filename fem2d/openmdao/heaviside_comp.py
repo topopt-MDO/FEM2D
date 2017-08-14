@@ -20,5 +20,5 @@ class HeavisideComp(ExplicitComponent):
     def compute(self, inputs, outputs):
         outputs['y'] = 0.5 + 0.5 * np.tanh(inputs['x']) + 1e-5
 
-    def compute_partials(self, inputs, outputs, partials):
+    def compute_partials(self, inputs, partials):
         partials['y', 'x'] = 0.5 / np.cosh(inputs['x']) ** 2
