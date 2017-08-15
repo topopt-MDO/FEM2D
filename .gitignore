@@ -6,3 +6,4 @@ fem2d/fem2d.cpp
 *.out
 save/*
 *.html
+*.pkl

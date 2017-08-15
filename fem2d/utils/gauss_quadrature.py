@@ -1,5 +1,6 @@
 from __future__ import division
 import numpy as np
+import numpy.polynomial.legendre
 
 
 gauss_pts_dict = {
@@ -60,10 +61,18 @@ gauss_wts_dict = {
 }
 
 
+gauss_pts_dict = {}
+gauss_wts_dict = {}
+for num in range(1, 10):
+    pts, wts = np.polynomial.legendre.leggauss(num)
+    gauss_pts_dict[num] = pts
+    gauss_wts_dict[num] = wts
+
 if __name__ == '__main__':
     for num in range(1, 6):
         print(num)
         print('pts:', gauss_pts_dict[num])
         print('wts:', gauss_wts_dict[num])
         print(np.sum(gauss_wts_dict[num]))
+        print(np.polynomial.legendre.leggauss(num))
         print()

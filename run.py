@@ -17,12 +17,12 @@ nu = 0.3 #0.3
 
 a = PyFEMSolver(num_nodes_x, num_nodes_y, length_x, length_y, E, nu)
 
-size = (num_nodes_x - 1) * (num_nodes_y - 1) * 64 + 2 * 2 * num_nodes_y
+size = (num_nodes_x - 1) * (num_nodes_y - 1) * 64 * 4 + 2 * 2 * num_nodes_y
 data = np.zeros(size)
 rows = np.zeros(size, np.int32)
 cols = np.zeros(size, np.int32)
 
-multipliers = np.ones((num_nodes_x - 1) * (num_nodes_y - 1))
+multipliers = np.ones(num_nodes_x * num_nodes_y)
 a.get_stiffness_matrix(multipliers, data, rows, cols)
 
 orig_nodes = np.zeros((num_nodes_x, num_nodes_y, 2))
@@ -113,17 +113,8 @@ else:
 deflected_nodes = u[:num_nodes_x*num_nodes_y*2].reshape((num_nodes_x, num_nodes_y, 2))
 print(u[(num_nodes_y*(num_nodes_x-1)+int(num_nodes_y/2))*2])
 
-if 0:
+if 1:
     axes = plt.gca()
     plot(orig_nodes, axes)
     plot(orig_nodes + deflected_nodes * 1e0, axes, 'r')
     plt.show()
-
-sensitivity = np.zeros((num_nodes_x-1)*(num_nodes_y-1))
-desvar = np.ones((num_nodes_x-1)*(num_nodes_y-1))
-a.get_sensitivity(u[:num_nodes_x*num_nodes_y*2], desvar, sensitivity)
-
-[x_, y_] = np.meshgrid(np.linspace(0.5,9.5,10),np.linspace(0.5,9.5,10))
-plt.scatter(x_.flatten(order='F'),y_.flatten(order='F'), s = 200, c = sensitivity)
-plt.colorbar()
-plt.show()

@@ -114,49 +114,38 @@ void FEMSolver::compute_Ke(){
   // N2 = 0.25 * (1 + r) * (1 - s);
   // N3 = 0.25 * (1 + r) * (1 + s);
   // N4 = 0.25 * (1 - r) * (1 + s);
-  Ke_.resize(8, vector<double>(8,0.0));
 
-  for (int gg = 0; gg < wi.size(); gg++){
+  Ke0.resize(8, vector<double>(8,0.0));
+  Ke1.resize(8, vector<double>(8,0.0));
+  Ke2.resize(8, vector<double>(8,0.0));
+  Ke3.resize(8, vector<double>(8,0.0));
+
+  for (int gg = 0; gg < 4; gg++){
     B.resize(3, vector<double>(8,0.0));
     double r = ri[gg], s = si[gg], w = wi[gg];
 
+    // du_dx
     B[0][0] = -0.25 * (1-s) * dr_dx;
-    B[0][1] = 0.;
     B[0][2] =  0.25 * (1-s) * dr_dx;
-    B[0][3] = 0.;
     B[0][4] =  0.25 * (1+s) * dr_dx;
-    B[0][5] = 0.;
     B[0][6] = -0.25 * (1+s) * dr_dx;
-    B[0][7] = 0.;
 
     // dv_dy
-    B[1][0] = 0;
     B[1][1] = -0.25 * (1-r) * ds_dy;
-    B[1][2] = 0.;
     B[1][3] = -0.25 * (1+r) * ds_dy;
-    B[1][4] = 0.;
     B[1][5] =  0.25 * (1+r) * ds_dy;
-    B[1][6] = 0.;
     B[1][7] =  0.25 * (1-r) * ds_dy;
 
     // du_dy
     B[2][0] = -0.25 * (1-r) * ds_dy;
-    //B[2][1] = 0.;
     B[2][2] = -0.25 * (1+r) * ds_dy;
-    //B[2][3] = 0.;
     B[2][4] =  0.25 * (1+r) * ds_dy;
-    //B[2][5] = 0.;
     B[2][6] =  0.25 * (1-r) * ds_dy;
-    //B[2][7] = 0.;
 
     // dv_dx
-    //B[2][0] = 0;
     B[2][1] = -0.25 * (1-s) * dr_dx;
-    //B[2][2] = 0.;
     B[2][3] =  0.25 * (1-s) * dr_dx;
-    //B[2][4] = 0.;
     B[2][5] =  0.25 * (1+s) * dr_dx;
-    //B[2][6] = 0.;
     B[2][7] = -0.25 * (1+s) * dr_dx;
 
 
@@ -165,7 +154,16 @@ void FEMSolver::compute_Ke(){
     Matrix BDB = dot(BD_tmp, B);
     double detjw = Area/4.0*w;
     BDB = BDB * detjw;
-    Ke_ = Ke_ + BDB;
+
+    if (gg == 0) {
+      Ke0 = BDB;
+    } else if (gg == 1) {
+      Ke1 = BDB;
+    } else if (gg == 2) {
+      Ke2 = BDB;
+    } else if (gg == 3) {
+      Ke3 = BDB;
+    }
   }
 }
 
@@ -176,7 +174,22 @@ void FEMSolver::get_stiffness_matrix(double* multipliers, double* data, int* row
     for (int ielem_y = 0; ielem_y < num_nodes_y - 1; ielem_y++) {
       for (int imat_x = 0; imat_x < 8; imat_x++) {
         for (int imat_y = 0; imat_y < 8; imat_y++) {
-          data[index] = Ke_[imat_x][imat_y] * multipliers[ielem_x * (num_nodes_y - 1) + ielem_y];
+          data[index] = Ke0[imat_x][imat_y] * multipliers[(ielem_x + 0) * num_nodes_y + (ielem_y + 0)];
+          rows[index] = elems[ielem_x][ielem_y][imat_x];
+          cols[index] = elems[ielem_x][ielem_y][imat_y];
+          index += 1;
+
+          data[index] = Ke1[imat_x][imat_y] * multipliers[(ielem_x + 1) * num_nodes_y + (ielem_y + 0)];
+          rows[index] = elems[ielem_x][ielem_y][imat_x];
+          cols[index] = elems[ielem_x][ielem_y][imat_y];
+          index += 1;
+
+          data[index] = Ke2[imat_x][imat_y] * multipliers[(ielem_x + 1) * num_nodes_y + (ielem_y + 1)];
+          rows[index] = elems[ielem_x][ielem_y][imat_x];
+          cols[index] = elems[ielem_x][ielem_y][imat_y];
+          index += 1;
+
+          data[index] = Ke3[imat_x][imat_y] * multipliers[(ielem_x + 0) * num_nodes_y + (ielem_y + 1)];
           rows[index] = elems[ielem_x][ielem_y][imat_x];
           cols[index] = elems[ielem_x][ielem_y][imat_y];
           index += 1;
@@ -214,26 +227,25 @@ void FEMSolver::get_stiffness_matrix_derivs(double* states, double* data, int* r
     for (int ielem_y = 0; ielem_y < num_nodes_y - 1; ielem_y++) {
       for (int imat_x = 0; imat_x < 8; imat_x++) {
         for (int imat_y = 0; imat_y < 8; imat_y++) {
-          data[index] = Ke_[imat_x][imat_y] * states[elems[ielem_x][ielem_y][imat_y]];
+          data[index] = Ke0[imat_x][imat_y] * states[elems[ielem_x][ielem_y][imat_y]];
           rows[index] = elems[ielem_x][ielem_y][imat_x];
-          cols[index] = ielem_x * (num_nodes_y - 1) + ielem_y;
+          cols[index] = (ielem_x + 0) * num_nodes_y + (ielem_y + 0);
           index += 1;
-        }
-      }
-    }
-  }
-}
 
-void FEMSolver::get_sensitivity(double* u, double* desvar, double* sensitivity){
-  double compliance = 0;
-  int index = 0;
-  double p = 3; // penalization parameter
-  for (int ielem_x = 0; ielem_x < num_nodes_x - 1; ielem_x++) {
-    for (int ielem_y = 0; ielem_y < num_nodes_y - 1; ielem_y++) {
-      double rho = desvar[index];
-      Vector u_dof(8);
-      for (int mm = 0; mm < 8; mm++){
-        u_dof[mm] = u[elems[ielem_x][ielem_y][mm]];
+          data[index] = Ke1[imat_x][imat_y] * states[elems[ielem_x][ielem_y][imat_y]];
+          rows[index] = elems[ielem_x][ielem_y][imat_x];
+          cols[index] = (ielem_x + 1) * num_nodes_y + (ielem_y + 0);
+          index += 1;
+
+          data[index] = Ke2[imat_x][imat_y] * states[elems[ielem_x][ielem_y][imat_y]];
+          rows[index] = elems[ielem_x][ielem_y][imat_x];
+          cols[index] = (ielem_x + 1) * num_nodes_y + (ielem_y + 1);
+          index += 1;
+
+          data[index] = Ke3[imat_x][imat_y] * states[elems[ielem_x][ielem_y][imat_y]];
+          rows[index] = elems[ielem_x][ielem_y][imat_x];
+          cols[index] = (ielem_x + 0) * num_nodes_y + (ielem_y + 1);
+          index += 1;
         }
       Vector v1 = dot(Ke_,u_dof);
       sensitivity[index] = -0.5*p*pow(desvar[index],p-1)*dot(v1,u_dof);
