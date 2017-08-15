@@ -7,3 +7,5 @@ fem2d/fem2d.cpp
 save/*
 *.html
 *.pkl
+save*/
+*.pyc
