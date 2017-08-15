@@ -1,6 +1,6 @@
 import numpy as np
 
-from openmdao.api import Problem, view_model, ScipyOptimizer, pyOptSparseDriver
+from openmdao.api import Problem, view_model, ScipyOptimizer #, pyOptSparseDriver
 
 from fem2d.fem2d import PyFEMSolver
 from fem2d.openmdao.fem2d_simp_group import FEM2DSimpGroup

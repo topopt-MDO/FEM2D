@@ -247,15 +247,13 @@ void FEMSolver::get_stiffness_matrix_derivs(double* states, double* data, int* r
           cols[index] = (ielem_x + 0) * num_nodes_y + (ielem_y + 1);
           index += 1;
         }
-      Vector v1 = dot(Ke_,u_dof);
-      sensitivity[index] = -0.5*p*pow(desvar[index],p-1)*dot(v1,u_dof);
-      index += 1;
+      }
     }
   }
 }
 
-int main(){
-  FEMSolver fem2(1,1,1,1,1,0.5);
+//int main(){
+  //FEMSolver fem2(1,1,1,1,1,0.5);
   // for (int ii = 0; ii < 3; ii++){
   //   cout << "\n";
   //   for (int jj = 0; jj < 3; jj++){
@@ -264,4 +262,4 @@ int main(){
   //   cout << "\n";
   // }
 
-}
+//}
