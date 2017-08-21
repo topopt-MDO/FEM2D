@@ -9,7 +9,9 @@ cdef extern from "fem_solver.h":
     FEMSolver(int, int, double, double, double, double) except +
     void get_stiffness_matrix(double* multipliers, double* data, int* rows, int* cols)
     void get_stiffness_matrix_derivs(double* states, double* data, int* rows, int* cols)
-
+    void set_area_fractions(double* areafraction)
+    void get_stiffness_matrix(double* data, int* rows, int* cols);
+    void get_sensitivity_LSTO(double* u, double* xpos, double* ypos, double* sens);
 
 cdef class PyFEMSolver:
 
@@ -28,3 +30,11 @@ cdef class PyFEMSolver:
             self, np.ndarray[double] states,
             np.ndarray[double] data, np.ndarray[int] rows, np.ndarray[int] cols):
         self.thisptr.get_stiffness_matrix_derivs(&states[0], &data[0], &rows[0], &cols[0])
+    def set_area_fractions(self, np.ndarray[double] areafraction):
+        self.thisptr.set_area_fractions(&areafraction[0])
+    def get_stiffness_matrix(
+        self, np.ndarray[double] data, np.ndarray[int] rows, np.ndarray[int] cols):
+        self.thisptr.get_stiffness_matrix(&data[0], &rows[0], &cols[0])
+    def get_sensitivity_LSTO(self, np.ndarray[double] u, np.ndarray[double] xpos, 
+            np.ndarray[double] ypos, np.ndarray[double] sens):
+        self.thisptr.get_sensitivity_LSTO(&u[0], &xpos[0], &ypos[0], &sens[0])

@@ -9,8 +9,8 @@ from fem2d.utils.plot import get_mesh, plot_solution, plot_contour
 from fem2d.utils.forces import get_forces
 
 
-num_nodes_x = 61
-num_nodes_y = 31
+num_nodes_x = 81
+num_nodes_y = 41
 
 num_param_x = 41
 num_param_y = 21

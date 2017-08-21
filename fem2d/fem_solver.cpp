@@ -4,8 +4,7 @@
 
 FEMSolver::FEMSolver(
   int num_nodes_x, int num_nodes_y, double length_x, double length_y,
-  double E, double nu
-) {
+  double E, double nu, bool isLSTO_): isLSTO(isLSTO) {
   this->num_nodes_x = num_nodes_x;
   this->num_nodes_y = num_nodes_y;
   this->length_x = length_x;
@@ -20,6 +19,7 @@ FEMSolver::FEMSolver(
   compute_elems();
   compute_D(E, nu);
   // print(D_voigt);
+  
   compute_Ke();
 }
 
@@ -82,6 +82,12 @@ void FEMSolver::compute_Ke(){
   Matrix B;
   double Area = (length_x*length_y)/((num_nodes_x-1)*(num_nodes_y-1));
 
+  Ke.resize(8, vector<double>(8,0.0));
+  Ke0.resize(8, vector<double>(8,0.0));
+  Ke1.resize(8, vector<double>(8,0.0));
+  Ke2.resize(8, vector<double>(8,0.0));
+  Ke3.resize(8, vector<double>(8,0.0));
+
   // vector<double> ri = {-1./sqrt(3), +1./sqrt(3), +1./sqrt(3), -1./sqrt(3)};
   // vector<double> si = {-1./sqrt(3), -1./sqrt(3), +1./sqrt(3), +1./sqrt(3)};
   // vector<double> wi = {1, 1, 1, 1};
@@ -115,10 +121,6 @@ void FEMSolver::compute_Ke(){
   // N3 = 0.25 * (1 + r) * (1 + s);
   // N4 = 0.25 * (1 - r) * (1 + s);
 
-  Ke0.resize(8, vector<double>(8,0.0));
-  Ke1.resize(8, vector<double>(8,0.0));
-  Ke2.resize(8, vector<double>(8,0.0));
-  Ke3.resize(8, vector<double>(8,0.0));
 
   for (int gg = 0; gg < 4; gg++){
     B.resize(3, vector<double>(8,0.0));
@@ -163,6 +165,48 @@ void FEMSolver::compute_Ke(){
       Ke2 = BDB;
     } else if (gg == 3) {
       Ke3 = BDB;
+    }
+    Ke = Ke0 + Ke1;
+    Ke = Ke + Ke2;
+    Ke = Ke + Ke3;
+  }
+}
+
+void FEMSolver::get_stiffness_matrix(double* data, int* rows, int* cols) {
+  // in case of LSTO, or where only an uniform material density is applied per elem.
+  int index = 0;
+
+  for (int ielem_x = 0; ielem_x < num_nodes_x - 1; ielem_x++) {
+    for (int ielem_y = 0; ielem_y < num_nodes_y - 1; ielem_y++) {
+      for (int imat_x = 0; imat_x < 8; imat_x++) {
+        for (int imat_y = 0; imat_y < 8; imat_y++) {
+          data[index] = Ke[imat_x][imat_y] * area_fraction[ielem_x][ielem_y];
+          rows[index] = elems[ielem_x][ielem_y][imat_x];
+          cols[index] = elems[ielem_x][ielem_y][imat_y];
+          index += 1;
+        }
+      }
+    }
+  }
+
+  // Lagrange multipliers
+  int inode_x = 0;
+  int idof = 0;
+  int num_dofs = num_nodes_x * num_nodes_y * 2;
+
+  for (int k = 0; k < 2; k++) {
+    for (int inode_y = 0; inode_y < num_nodes_y; inode_y++) {
+      idof = inode_x * num_nodes_y * 2 + inode_y * 2 + k;
+
+      data[index] = 1;
+      rows[index] = idof;
+      cols[index] = inode_y * 2 + k + num_dofs;
+      index += 1;
+
+      data[index] = 1;
+      rows[index] = inode_y * 2 + k + num_dofs;
+      cols[index] = idof;
+      index += 1;
     }
   }
 }
@@ -248,6 +292,69 @@ void FEMSolver::get_stiffness_matrix_derivs(double* states, double* data, int* r
           index += 1;
         }
       }
+    }
+  }
+}
+
+void FEMSolver::get_sensitivity_LSTO(double* u, double* xpos, double* ypos, double* sens){
+  // calculate sensitivities at the gausspoints
+  double Area = (length_x*length_y)/((num_nodes_x-1)*(num_nodes_y-1));
+  double wj = Area/4.0;
+
+  vector<double> ri = {-1./sqrt(3), +1./sqrt(3), +1./sqrt(3), -1./sqrt(3)};
+  vector<double> si = {-1./sqrt(3), -1./sqrt(3), +1./sqrt(3), +1./sqrt(3)};
+  Vector x0, y0, u0;
+  Vector tmp_;
+  double N1, N2, N3, N4;
+  // vector<double> wi = {1, 1, 1, 1};
+  int index = 0;
+  for (int ii = 0; ii < num_nodes_x-1; ii++){
+    for (int jj = 0; jj < num_nodes_y-1; jj++){
+      for (int gg = 0; gg < 4; gg ++ ){
+        double r = ri[gg], s = si[gg];
+        x0 = {nodes[ii][jj][0], nodes[ii+1][jj][0], nodes[ii+1][jj+1][0],nodes[ii][jj+1][0]};
+        y0 = {nodes[ii][jj][1], nodes[ii+1][jj][1], nodes[ii+1][jj+1][1],nodes[ii][jj+1][1]};
+        u0 = {u[elems[ii][jj][0]], u[elems[ii][jj][1]], u[elems[ii][jj][2]], u[elems[ii][jj][3]],
+          u[elems[ii][jj][4]], u[elems[ii][jj][5]], u[elems[ii][jj][6]], u[elems[ii][jj][7]]};
+        N1 = 0.25 * (1 - r) * (1 - s);
+        N2 = 0.25 * (1 + r) * (1 - s);
+        N3 = 0.25 * (1 + r) * (1 + s); 
+        N4 = 0.25 * (1 - r) * (1 + s);
+        double x_ = x0[0]*N1 + x0[1]*N2 + x0[2]*N3 + x0[3]*N4;  
+        double y_ = y0[0]*N1 + y0[1]*N2 + y0[2]*N3 + y0[3]*N4;  
+        xpos[index] = x_; ypos[index] = y_;
+        
+        if (gg == 0) {
+          tmp_ = dot(Ke0,u0);
+          sens[index] = dot(u0,tmp_);
+          sens[index] /= wj;
+        } else if (gg == 1) {
+          tmp_ = dot(Ke1,u0);
+          sens[index] =dot(u0,tmp_);
+          sens[index] /= wj;
+        } else if (gg == 2) {
+          tmp_ = dot(Ke2,u0);
+          sens[index] =dot(u0,tmp_);
+          sens[index] /= wj;
+        } else if (gg == 3) {
+          tmp_ = dot(Ke3,u0);
+          sens[index] =dot(u0,tmp_);
+          sens[index] /= wj;
+        }
+                
+        index ++;
+      }
+    }
+  }
+  
+}
+
+void FEMSolver::set_area_fractions(double* areafraction){
+  this->area_fraction.resize(num_nodes_x-1, Vector(num_nodes_y-1, 0.0));
+  
+  for (int ii = 0; ii < num_nodes_x-1; ii++){
+    for (int jj = 0; jj < num_nodes_y-1; jj++){
+      this->area_fraction[ii][jj] = areafraction[jj*(num_nodes_x-1)+ii];
     }
   }
 }
