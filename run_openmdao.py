@@ -66,8 +66,8 @@ prob.driver.options['disp'] = True
 
 prob.setup()
 
-# view_model(prob)
-# exit()
+view_model(prob)
+# exit()  
 
 if 1:
     prob.run_driver()

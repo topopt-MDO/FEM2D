@@ -9,3 +9,4 @@ save/*
 *.pkl
 save*/
 *.pyc
+visualization/
