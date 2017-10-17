@@ -3,7 +3,8 @@ import numpy as np
 from openmdao.api import Problem, view_model, ScipyOptimizer #, pyOptSparseDriver
 
 from fem2d.fem2d import PyFEMSolver
-from fem2d.openmdao.fem2d_simp_elemwise_group import FEM2DSimpGroup
+from fem2d.openmdao.fem2d_simp_elemwise_wFilter_group import FEM2DSimpGroup
+#from fem2d.openmdao.fem2d_simp_elemwise_group import FEM2DSimpGroup
 from fem2d.openmdao.fem2d_param_group import FEM2DParamGroup
 from fem2d.utils.plot import get_mesh, plot_solution, plot_contour
 from fem2d.utils.forces import get_forces
