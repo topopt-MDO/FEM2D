@@ -59,9 +59,9 @@ class DensityFilterComp(ExplicitComponent):
                         # print(eid_i, eid_j, x_i, y_i, x_j, y_j, dij)
                         if dij < radius:
                             num_neighbor += 1
-                            dij_list.append(dij)
+                            dij_list.append(radius - dij)
                             negh_list.append(eid_j)
-                            dsum += dij
+                            dsum += radius - dij
                 
                 for tt in range(0, num_neighbor):
                     row.append(eid_i)
