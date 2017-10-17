@@ -1,0 +1,8 @@
+REQUIREMENTS:
+anaconda 
+(numpy, Cython)
+conda install libgcc
+
+[error from problem_viewer]
+cp -r /mnt/share/packages/blue/openmdao/devtools/problem_viewer/visualization/ ~/anaconda2/lib/python2.7/site-packages/openmdao/devtools/problem_viewer/
+

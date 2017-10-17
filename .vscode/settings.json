@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "vector": "cpp",
+        "initializer_list": "cpp",
+        "*.tcc": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp",
+        "iostream": "cpp"
+    },
+    "python.linting.pylintEnabled": false
+}

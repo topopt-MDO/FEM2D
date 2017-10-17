@@ -66,7 +66,7 @@ def plot_mesh(num_nodes_x, num_nodes_y, length_x, length_y):
     plt.axis('equal')
 
 
-def plot_contour(mesh, field, plot_boundary=False, plot_fill=False):
+def plot_contour(mesh, field, plot_boundary=False, plot_fill=False, plot_patch=False):
     if plot_fill:
         plt.subplot(2, 1, 1)
         x1 = np.min(mesh[:, :, 0])
@@ -85,6 +85,9 @@ def plot_contour(mesh, field, plot_boundary=False, plot_fill=False):
         plt.plot([0, length_x], [0]*2, 'k', linewidth=0.4) #, zorder=1)
         plt.plot([0, length_x], [length_y]*2, 'k', linewidth=0.4) #, zorder=1)
         plt.axis('equal')
+    
+    if plot_patch:
+        pass
 
 
 def plot_save(save=None, show=False):

@@ -3,7 +3,7 @@ import numpy as np
 from openmdao.api import Problem, view_model, ScipyOptimizer #, pyOptSparseDriver
 
 from fem2d.fem2d import PyFEMSolver
-from fem2d.openmdao.fem2d_simp_group import FEM2DSimpGroup
+from fem2d.openmdao.fem2d_simp_elemwise_group import FEM2DSimpGroup
 from fem2d.openmdao.fem2d_param_group import FEM2DParamGroup
 from fem2d.utils.plot import get_mesh, plot_solution, plot_contour
 from fem2d.utils.forces import get_forces
@@ -34,9 +34,10 @@ fem_solver = PyFEMSolver(num_nodes_x, num_nodes_y, length_x, length_y, E, nu)
 forces = get_forces(num_nodes_x, num_nodes_y, f=f)
 nodes = get_mesh(num_nodes_x, num_nodes_y, length_x, length_y)
 
-if 0:
+if 1:
     model = FEM2DSimpGroup(
         fem_solver=fem_solver,
+        length_x=length_x, length_y=length_y,
         num_nodes_x=num_nodes_x, num_nodes_y=num_nodes_y,
         forces=forces, p=p,
         nodes=nodes, w=w,

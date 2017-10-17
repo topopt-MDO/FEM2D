@@ -46,8 +46,11 @@ while os.path.isfile(filename):
         ))
         plot_contour(gpt_mesh, fill, plot_fill=True)
         plot_contour(gpt_mesh, boundary, plot_boundary=True)
-    else:
+    elif 0:
         multipliers = raw['multipliers'].reshape((num_nodes_x, num_nodes_y))
+        plot_contour(mesh, multipliers, plot_fill=True)
+    else:
+        multipliers = raw['multipliers'].reshape((num_nodes_x-1, num_nodes_y-1))
         plot_contour(mesh, multipliers, plot_fill=True)
 
     plot_save(save='save/save%03i.png'%counter)

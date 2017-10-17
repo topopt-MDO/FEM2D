@@ -22,20 +22,27 @@ class StatesComp(ImplicitComponent):
         self.metadata.declare('nodes', type_=np.ndarray, required=True)
         self.metadata.declare('gpt_mesh', type_=np.ndarray, required=True)
         self.metadata.declare('quad_order', default=None, type_=(int, type(None)))
+        self.metadata.declare('isNodal', default=True, type_=bool)
 
     def setup(self):
         fem_solver = self.metadata['fem_solver']
         num_nodes_x = self.metadata['num_nodes_x']
         num_nodes_y = self.metadata['num_nodes_y']
         quad_order = self.metadata['quad_order']
+        isNodal = self.isNodal = self.metadata['isNodal']
 
         self.mesh = self.metadata['nodes']
         self.counter = 0
 
         state_size = 2 * num_nodes_x * num_nodes_y + 2 * num_nodes_y
         num_nodes = num_nodes_x * num_nodes_y
-
-        self.add_input('multipliers', shape=num_nodes)
+        num_elems = (num_nodes_x - 1) * (num_nodes_y - 1)
+        
+        if isNodal is True:
+            self.add_input('multipliers', shape=num_nodes)
+        else:
+            self.add_input('multipliers', shape=num_elems)
+        
         if quad_order is not None:
             self.add_input('plot_var', shape=(num_nodes_x - 1) * (num_nodes_y - 1) * quad_order ** 2)
             self.add_input('plot_var2', shape=(num_nodes_x - 1) * (num_nodes_y - 1) * quad_order ** 2)
@@ -47,15 +54,15 @@ class StatesComp(ImplicitComponent):
         self.rows = rows = np.zeros(size, np.int32)
         self.cols = cols = np.zeros(size, np.int32)
 
-        fem_solver.get_stiffness_matrix(np.ones(num_nodes), data, rows, cols)
-        self.declare_partials('states', 'states', rows=rows, cols=cols)
+        fem_solver.get_stiffness_matrix(np.ones(num_nodes), data, rows, cols, self.isNodal)
+        self.declare_partials('states', 'states', rows=rows, cols=cols) 
 
         size = (num_nodes_x - 1) * (num_nodes_y - 1) * 64 * 4
         self.data_d = data_d = np.zeros(size)
         self.rows_d = rows_d = np.zeros(size, np.int32)
         self.cols_d = cols_d = np.zeros(size, np.int32)
 
-        fem_solver.get_stiffness_matrix_derivs(np.ones(state_size), data_d, rows_d, cols_d)
+        fem_solver.get_stiffness_matrix_derivs(np.ones(state_size), data_d, rows_d, cols_d, self.isNodal)
         self.declare_partials('states', 'multipliers', rows=rows_d, cols=cols_d)
 
         data = -np.ones(state_size)
@@ -75,7 +82,7 @@ class StatesComp(ImplicitComponent):
 
         data, rows, cols = self.data, self.rows, self.cols
 
-        fem_solver.get_stiffness_matrix(inputs['multipliers'], data, rows, cols)
+        fem_solver.get_stiffness_matrix(inputs['multipliers'], data, rows, cols, self.isNodal)
 
         mtx = scipy.sparse.csc_matrix((data, (rows, cols)), shape=(state_size, state_size))
 
@@ -86,7 +93,7 @@ class StatesComp(ImplicitComponent):
 
         data_d, rows_d, cols_d = self.data_d, self.rows_d, self.cols_d
 
-        fem_solver.get_stiffness_matrix_derivs(outputs['states'], data_d, rows_d, cols_d)
+        fem_solver.get_stiffness_matrix_derivs(outputs['states'], data_d, rows_d, cols_d, self.isNodal)
 
     def _solve(self, sol, rhs, mode):
         if mode == 'fwd':
@@ -116,7 +123,8 @@ class StatesComp(ImplicitComponent):
             self.mtx.T, rhs, x0=sol, M=pc_op,
             callback=Callback(self.mtx), tol=1e-10, restart=200,
         )[0]
-
+        
+        # sol[:] = scipy.sparse.linalg.spsolve(self.mtx, rhs)
         # sol[:] = self.ilu.solve(rhs, arg)
 
     def apply_nonlinear(self, inputs, outputs, residuals):
